@@ -13,12 +13,12 @@ import { Alert, AlertTitle } from '@material-ui/lab';
 import type { Octokit } from '@octokit/rest';
 import React, { useContext } from 'react';
 import { useAsyncRetry } from 'react-use';
-import { ZMK_MAIN_BRANCH, ZMK_OWNER, ZMK_REPO } from '../config';
-import { Repository } from '../repository';
-import { discoverBuildTargets, partitionBuildTargets } from '../targets';
+import { ZMK_MAIN_BRANCH, ZMK_OWNER, ZMK_REPO } from '../../config';
+import { Repository } from '../../repository';
+import { discoverBuildTargets, partitionBuildTargets } from '../../targets';
 import KeyboardItem from './KeyboardItem';
 import { KeyboardListDispatch, KeyboardListItem } from './KeyboardListReducer';
-import { useOctokit } from './OctokitProvider';
+import { useOctokit } from '../OctokitProvider';
 import PropTypes from 'prop-types';
 
 export interface KeyboardListProps {

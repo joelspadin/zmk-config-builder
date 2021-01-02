@@ -14,7 +14,7 @@ import {
 import { Delete, KeyboardOutlined } from '@material-ui/icons';
 import PropTypes from 'prop-types';
 import React, { useContext } from 'react';
-import type { BuildTarget } from '../targets';
+import type { BuildTarget } from '../../targets';
 import { KeyboardListDispatch } from './KeyboardListReducer';
 
 const useStyles = makeStyles((theme) =>

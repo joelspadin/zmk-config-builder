@@ -1,7 +1,7 @@
 import React, { useReducer, useState } from 'react';
 import { ConfigWizardDispatch, WizardState, wizardStateReducer, WizardStep } from './ConfigWizardReducer';
-import ModifyRepoPage from './ModifyRepoPage';
-import RepoSelectPage from './RepoSelectPage';
+import ModifyRepoPage from './Modify/ModifyRepoPage';
+import RepoSelectPage from './Select/RepoSelectPage';
 
 const INITIAL_STATE: WizardState = {
     step: WizardStep.SelectRepo,

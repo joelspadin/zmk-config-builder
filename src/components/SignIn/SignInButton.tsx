@@ -3,8 +3,8 @@ import GitHubIcon from '@material-ui/icons/GitHub';
 import { oauthAuthorizationUrl } from '@octokit/oauth-authorization-url';
 import { useSnackbar } from 'notistack';
 import React, { useState } from 'react';
-import { GITHUB_CLIENT_ID, GITHUB_OAUTH_CLIENT, GITHUB_SCOPES } from '../config';
-import { getDefaultPopupFeatures } from '../util';
+import { GITHUB_CLIENT_ID, GITHUB_OAUTH_CLIENT, GITHUB_SCOPES } from '../../config';
+import { getDefaultPopupFeatures } from '../../util';
 import { useAccessToken } from './AuthProvider';
 
 export interface SignInButtonProps {

@@ -3,9 +3,9 @@ import { Alert, AlertTitle, Skeleton, TabContext, TabList, TabPanel } from '@mat
 import PropTypes from 'prop-types';
 import React, { useState } from 'react';
 import CreateRepoForm from './CreateRepoForm';
-import ErrorMessage from './ErrorMessage';
-import { useGitHubUser } from './OctokitProvider';
-import { useRepo } from './RepoProvider';
+import ErrorMessage from '../../ErrorMessage';
+import { useGitHubUser } from '../../OctokitProvider';
+import { useRepo } from '../RepoProvider';
 
 enum Mode {
     CreateRepo = 'create',

@@ -18,13 +18,13 @@ import { RepoPushIcon } from '@primer/octicons-react';
 import PropTypes from 'prop-types';
 import React, { useContext, useReducer, useState } from 'react';
 import { useAsync, useAsyncFn } from 'react-use';
-import { USER_REPO_DEFAULT_BRANCH } from '../config';
-import { ConfigWizardDispatch, WizardStep } from './ConfigWizardReducer';
-import KeyboardList from './KeyboardList';
-import { KeyboardListDispatch, KeyboardListItem, keyboardListReducer } from './KeyboardListReducer';
-import { useOctokit } from './OctokitProvider';
-import RepoLink from './RepoLink';
-import { useRepo } from './RepoProvider';
+import { USER_REPO_DEFAULT_BRANCH } from '../../../config';
+import { ConfigWizardDispatch, WizardStep } from '../ConfigWizardReducer';
+import KeyboardList from '../KeyboardList';
+import { KeyboardListDispatch, KeyboardListItem, keyboardListReducer } from '../KeyboardListReducer';
+import { useOctokit } from '../../OctokitProvider';
+import RepoLink from '../RepoLink';
+import { useRepo } from '../RepoProvider';
 
 export interface CreateRepoFormProps {
     owner: string;

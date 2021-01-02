@@ -1,5 +1,5 @@
 import React, { createContext, Dispatch } from 'react';
-import type { BuildTarget } from '../targets';
+import type { BuildTarget } from '../../targets';
 
 export interface KeyboardListItem {
     keyboard?: BuildTarget;

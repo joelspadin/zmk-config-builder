@@ -14,12 +14,12 @@ import {
 import { indigo, purple } from '@material-ui/core/colors';
 import { SnackbarAction, SnackbarProvider } from 'notistack';
 import React, { useMemo, useRef } from 'react';
-import { AuthProvider, useSignedIn } from './AuthProvider';
-import ConfigWizard from './ConfigWizard';
+import ConfigWizard from './Wizard/ConfigWizard';
 import { OctokitProvider } from './OctokitProvider';
-import { RepoProvider } from './RepoProvider';
-import SignInForm from './SignInForm';
-import SignOutButton from './SignOutButton';
+import { RepoProvider } from './Wizard/RepoProvider';
+import { AuthProvider, useSignedIn } from './SignIn/AuthProvider';
+import SignInForm from './SignIn/SignInForm';
+import SignOutButton from './SignIn/SignOutButton';
 
 const useStyles = makeStyles((theme) =>
     createStyles({

@@ -2,7 +2,7 @@ import { Octokit } from '@octokit/rest';
 import React, { createContext, useContext, useMemo } from 'react';
 import { useAsync } from 'react-use';
 import type { AsyncState } from 'react-use/lib/useAsync';
-import { useAccessToken } from './AuthProvider';
+import { useAccessToken } from './SignIn/AuthProvider';
 
 export interface GitHubUser {
     login: string;

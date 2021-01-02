@@ -15,11 +15,11 @@ import { Alert, AlertTitle } from '@material-ui/lab';
 import { GitBranchIcon } from '@primer/octicons-react';
 import PropTypes from 'prop-types';
 import React, { useContext, useState } from 'react';
-import { ConfigWizardDispatch, WizardStep } from './ConfigWizardReducer';
-import ErrorMessage from './ErrorMessage';
-import { useGitHubUser } from './OctokitProvider';
-import RepoLink from './RepoLink';
-import { useRepo } from './RepoProvider';
+import { ConfigWizardDispatch, WizardStep } from '../ConfigWizardReducer';
+import ErrorMessage from '../../ErrorMessage';
+import { useGitHubUser } from '../../OctokitProvider';
+import RepoLink from '../RepoLink';
+import { useRepo } from '../RepoProvider';
 
 const useStyles = makeStyles((theme) =>
     createStyles({
