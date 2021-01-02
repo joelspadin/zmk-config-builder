@@ -16,6 +16,7 @@ import { GitBranchIcon } from '@primer/octicons-react';
 import PropTypes from 'prop-types';
 import React, { useContext, useState } from 'react';
 import { ConfigWizardDispatch, WizardStep } from './ConfigWizardReducer';
+import ErrorMessage from './ErrorMessage';
 import { useGitHubUser } from './OctokitProvider';
 import RepoLink from './RepoLink';
 import { useRepo } from './RepoProvider';
@@ -64,12 +65,7 @@ const ModifyRepoPage: React.FunctionComponent<ModifyRepoProps> = (props) => {
     }
 
     if (user.error) {
-        return (
-            <Alert severity="error">
-                <AlertTitle>Error</AlertTitle>
-                {user.error.message}
-            </Alert>
-        );
+        return <ErrorMessage error={user.error} />;
     }
 
     if (user.value === undefined) {

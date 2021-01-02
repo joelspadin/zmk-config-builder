@@ -3,6 +3,7 @@ import { Alert, AlertTitle, Skeleton, TabContext, TabList, TabPanel } from '@mat
 import PropTypes from 'prop-types';
 import React, { useState } from 'react';
 import CreateRepoForm from './CreateRepoForm';
+import ErrorMessage from './ErrorMessage';
 import { useGitHubUser } from './OctokitProvider';
 import { useRepo } from './RepoProvider';
 
@@ -28,12 +29,7 @@ const RepoSelectPage: React.FunctionComponent<RepoSelectProps> = (props) => {
     };
 
     if (user.error) {
-        return (
-            <Alert severity="error">
-                <AlertTitle>Error</AlertTitle>
-                {user.error.message}
-            </Alert>
-        );
+        return <ErrorMessage error={user.error} />;
     }
 
     if (user.value === undefined) {
@@ -54,8 +50,7 @@ const RepoSelectPage: React.FunctionComponent<RepoSelectProps> = (props) => {
                     <CreateRepoForm owner={user.value.login} />
                 </TabPanel>
                 <TabPanel value={Mode.SelectRepo}>
-                    <p>Yay select.</p>
-                    <p>Repo search/selector.</p>
+                    <p>Repo search/selector goes here.</p>
                 </TabPanel>
             </TabContext>
         </Typography>
