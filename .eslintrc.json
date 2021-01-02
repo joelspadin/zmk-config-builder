@@ -16,6 +16,7 @@
       }
     ],
     "@typescript-eslint/semi": "warn",
+    "react/prop-types": ["warn", { "ignore": ["children"] }],
     "curly": "warn",
     "eqeqeq": "warn",
     "no-throw-literal": "warn",

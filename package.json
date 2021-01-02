@@ -13,11 +13,16 @@
   },
   "dependencies": {
     "@material-ui/core": "^4.11.2",
-    "@octokit/auth-token": "^2.4.4",
+    "@material-ui/icons": "^4.11.2",
+    "@material-ui/lab": "^4.0.0-alpha.57",
     "@octokit/oauth-authorization-url": "^4.1.1",
     "@octokit/rest": "^18.0.12",
+    "@primer/octicons-react": "^11.2.0",
+    "notistack": "^1.0.3",
+    "prop-types": "^15.7.2",
     "react": "^17.0.1",
-    "react-dom": "^17.0.1"
+    "react-dom": "^17.0.1",
+    "react-use": "^15.3.4"
   },
   "devDependencies": {
     "@snowpack/plugin-dotenv": "^2.0.5",
