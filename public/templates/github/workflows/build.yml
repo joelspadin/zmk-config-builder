@@ -41,15 +41,13 @@ jobs:
       - name: Prepare variables
         id: variables
         run: |
-          SHIELD_ARG=
-          ARTIFACT_NAME="${{ matrix.board }}"
-
           if [ -n "${{ matrix.shield }}" ]; then
             SHIELD_ARG="-DSHIELD=${{ matrix.shield }}"
-            ARTIFACT_NAME="${ARTIFACT_NAME}-${{ matrix.shield }}"
+            ARTIFACT_NAME="${{ matrix.shield }}-${{ matrix.board }}-zmk"
+          else
+            SHIELD_ARG=
+            ARTIFACT_NAME="${{ matrix.board }}-zmk"
           fi
-
-          ARTIFACT_NAME="${ARTIFACT_NAME}-zmk"
 
           echo ::set-output name=shield-arg::${SHIELD_ARG}
           echo ::set-output name=artifact-name::${ARTIFACT_NAME}
