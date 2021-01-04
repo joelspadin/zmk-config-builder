@@ -20,6 +20,7 @@ import ErrorMessage from '../../ErrorMessage';
 import { useGitHubUser } from '../../OctokitProvider';
 import RepoLink from '../RepoLink';
 import { useRepo } from '../RepoProvider';
+import UnderConstruction from '../../UnderConstruction';
 
 const useStyles = makeStyles((theme) =>
     createStyles({
@@ -113,6 +114,7 @@ const ModifyRepoPage: React.FunctionComponent<ModifyRepoProps> = (props) => {
                     />
                 </RadioGroup>
             </FormControl>
+            <UnderConstruction />
         </Typography>
     );
 };
