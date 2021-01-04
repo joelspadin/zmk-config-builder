@@ -1,10 +1,5 @@
 import React, { createContext, Dispatch } from 'react';
-import type { BuildTarget } from '../../targets';
-
-export interface KeyboardListItem {
-    keyboard?: BuildTarget;
-    controller?: BuildTarget;
-}
+import type { Build, BuildTarget } from '../../targets';
 
 interface AddAction {
     type: 'add';
@@ -31,7 +26,7 @@ export type KeyboardListAction = AddAction | RemoveAction | SetKeyboardAction | 
 
 export const KeyboardListDispatch = createContext<Dispatch<KeyboardListAction>>(() => {});
 
-export const keyboardListReducer: React.Reducer<KeyboardListItem[], KeyboardListAction> = (state, action) => {
+export const keyboardListReducer: React.Reducer<Partial<Build>[], KeyboardListAction> = (state, action) => {
     switch (action.type) {
         case 'add':
             return [...state, { keyboard: undefined, controller: undefined }];

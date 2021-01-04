@@ -15,14 +15,15 @@ import React, { useContext } from 'react';
 import { useAsyncRetry } from 'react-use';
 import { ZMK_MAIN_BRANCH, ZMK_OWNER, ZMK_REPO } from '../../config';
 import { Repository } from '../../repository';
-import { discoverBuildTargets, partitionBuildTargets } from '../../targets';
+import { Build, discoverBuildTargets, partitionBuildTargets } from '../../targets';
 import KeyboardItem from './KeyboardItem';
-import { KeyboardListDispatch, KeyboardListItem } from './KeyboardListReducer';
+import { KeyboardListDispatch } from './KeyboardListReducer';
 import { useOctokit } from '../OctokitProvider';
 import PropTypes from 'prop-types';
+import { getZmkRepo } from '../../zmk';
 
 export interface KeyboardListProps {
-    keyboards: KeyboardListItem[];
+    keyboards: Partial<Build>[];
 }
 
 const KeyboardList: React.FunctionComponent<KeyboardListProps> = ({ keyboards }) => {
@@ -101,7 +102,7 @@ const AddKeyboardItem: React.FunctionComponent<AddKeyboardItemProps> = () => {
 };
 
 async function getKeyboards(octokit: Octokit) {
-    const repo = new Repository(octokit, ZMK_OWNER, ZMK_REPO);
+    const repo = getZmkRepo(octokit);
     const targets = await discoverBuildTargets({ repo, branch: ZMK_MAIN_BRANCH });
     return partitionBuildTargets(targets);
 }

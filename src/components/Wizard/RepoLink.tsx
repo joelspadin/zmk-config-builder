@@ -10,7 +10,11 @@ export interface RepoLinkParams {
 
 const RepoLink: React.FunctionComponent<RepoLinkParams> = ({ owner, repo, showUrl }) => {
     const url = `https://github.com/${owner}/${repo}`;
-    return <Link href={url}>{showUrl ? url : `${owner}/${repo}`}</Link>;
+    return (
+        <Link href={url} target="_blank">
+            {showUrl ? url : `${owner}/${repo}`}
+        </Link>
+    );
 };
 
 RepoLink.propTypes = {

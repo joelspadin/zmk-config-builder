@@ -4,7 +4,7 @@ import { oauthAuthorizationUrl } from '@octokit/oauth-authorization-url';
 import { useSnackbar } from 'notistack';
 import React, { useState } from 'react';
 import { GITHUB_CLIENT_ID, GITHUB_OAUTH_CLIENT, GITHUB_SCOPES } from '../../config';
-import { getDefaultPopupFeatures } from '../../util';
+import { getDefaultPopupFeatures, showModalError } from '../../util';
 import { useAccessToken } from './AuthProvider';
 
 export interface SignInButtonProps {
@@ -39,16 +39,9 @@ const SignInButton: React.FunctionComponent<SignInButtonProps> = (props) => {
             const token = await getAccessToken(params);
             setToken(token);
         } catch (error) {
-            console.error(error);
             setState(State.Default);
-            enqueueSnackbar(error.toString(), {
-                variant: 'error',
-                persist: true,
-                anchorOrigin: {
-                    vertical: 'top',
-                    horizontal: 'center',
-                },
-            });
+            showModalError(enqueueSnackbar, error);
+            console.error(error);
         }
     }
 

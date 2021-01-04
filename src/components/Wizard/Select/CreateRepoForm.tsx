@@ -21,10 +21,15 @@ import { useAsync, useAsyncFn } from 'react-use';
 import { USER_REPO_DEFAULT_BRANCH } from '../../../config';
 import { ConfigWizardDispatch, WizardStep } from '../ConfigWizardReducer';
 import KeyboardList from '../KeyboardList';
-import { KeyboardListDispatch, KeyboardListItem, keyboardListReducer } from '../KeyboardListReducer';
+import { KeyboardListDispatch, keyboardListReducer } from '../KeyboardListReducer';
 import { useOctokit } from '../../OctokitProvider';
 import RepoLink from '../RepoLink';
 import { useRepo } from '../RepoProvider';
+import type { Build } from '../../../targets';
+import { generateGitHubWorkflow } from '../../../templates';
+import { createUserRepository } from '../../../createRepository';
+import { showModalError } from '../../../util';
+import { useSnackbar } from 'notistack';
 
 export interface CreateRepoFormProps {
     owner: string;
@@ -63,12 +68,19 @@ const CreateRepoForm: React.FunctionComponent<CreateRepoFormProps> = ({ owner })
     const repoExists = useAsync(() => checkIfRepoExists(octokit, owner, repo), [octokit, owner, repo]);
 
     const wizardDispatch = useContext(ConfigWizardDispatch);
+    const { enqueueSnackbar } = useSnackbar();
 
     const [createState, startCreateRepo] = useAsyncFn(async () => {
-        await createRepo({ octokit, owner, repo, isPrivate, keyboards });
-        setSelectedRepo({ repo, branch: USER_REPO_DEFAULT_BRANCH });
-        return true;
-    }, [octokit, owner, repo, isPrivate, keyboards]);
+        try {
+            await createRepo({ octokit, repo, isPrivate, keyboards });
+            setSelectedRepo({ repo, branch: USER_REPO_DEFAULT_BRANCH });
+            return true;
+        } catch (error) {
+            showModalError(enqueueSnackbar, error);
+            console.error(error);
+            return false;
+        }
+    }, [octokit, repo, isPrivate, keyboards]);
 
     const canCreateRepo = repo && repoExists.value === false && listValid;
 
@@ -174,7 +186,7 @@ CreateRepoForm.propTypes = {
 
 export default CreateRepoForm;
 
-function isKeyboardListValid(keyboards: KeyboardListItem[]) {
+function isKeyboardListValid(keyboards: Partial<Build>[]) {
     for (const item of keyboards) {
         if (item.keyboard?.type === 'shield' && item.controller === undefined) {
             return false;
@@ -195,14 +207,22 @@ async function checkIfRepoExists(octokit: Octokit, owner: string, repo: string) 
 
 interface CreateParams {
     octokit: Octokit;
-    owner: string;
     repo: string;
     isPrivate: boolean;
-    keyboards: KeyboardListItem[];
+    keyboards: Partial<Build>[];
 }
 
-function createRepo({ octokit, owner, repo, isPrivate, keyboards }: CreateParams) {
-    return new Promise<boolean>((resolve) => {
-        setTimeout(() => resolve(true), 2000);
+async function createRepo({ octokit, repo, isPrivate, keyboards }: CreateParams) {
+    const builds = filterKeyboards(keyboards);
+
+    const result = await createUserRepository(octokit, repo, {
+        builds,
+        private: isPrivate,
     });
+
+    console.log(result);
+}
+
+function filterKeyboards(keyboards: Partial<Build>[]): Build[] {
+    return keyboards.filter((item) => item.keyboard !== undefined) as Build[];
 }

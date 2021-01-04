@@ -117,15 +117,15 @@ const Header: React.FunctionComponent = () => {
 const AppContent: React.FunctionComponent = () => {
     const isSignedIn = useSignedIn();
 
-    if (isSignedIn) {
-        return (
-            <OctokitProvider>
-                <RepoProvider>
-                    <ConfigWizard />
-                </RepoProvider>
-            </OctokitProvider>
-        );
-    } else {
+    if (!isSignedIn) {
         return <SignInForm />;
     }
+
+    return (
+        <OctokitProvider>
+            <RepoProvider>
+                <ConfigWizard />
+            </RepoProvider>
+        </OctokitProvider>
+    );
 };

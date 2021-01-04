@@ -1,7 +1,8 @@
 import { splitExt } from './path';
 import type { Repository, GitTree, GitFile } from './repository';
 
-interface Common {
+export interface BuildTarget {
+    type: 'board' | 'shield';
     /** Name to display to the UI */
     name: string;
     /**
@@ -9,22 +10,23 @@ interface Common {
      * board or ["corne_left", "corne_right"] for a split.
      */
     buildTargets: string[];
+    /**
+     * Full path to the .keymap file (if it exists).
+     */
+    keymapPath?: string;
+    /**
+     * Full path to the .conf file (if it exists).
+     */
+    confPath?: string;
 }
 
-export interface Board extends Common {
-    type: 'board';
-    /** If true, this board is a keyboard on its own and does not need a shield. */
-    isStandalone: boolean;
+export interface Build {
+    keyboard: BuildTarget;
+    controller?: BuildTarget;
 }
 
-export interface Shield extends Common {
-    type: 'shield';
-}
-
-export type BuildTarget = Board | Shield;
-
-export function isShieldOrStandaloneBoard(target: BuildTarget) {
-    return target.type === 'shield' || target.isStandalone;
+export function isShieldOrStandaloneBoard(target: BuildTarget): boolean {
+    return target.type === 'shield' || !!target.keymapPath;
 }
 
 export interface RepoAndBranch {
@@ -86,25 +88,21 @@ async function searchSubdirectoriesOf(
 }
 
 function findBoards(tree: GitTree): Promise<BuildTarget[]> {
-    return findBuildTargets(tree, '.dts', getBoardFromDts);
+    return findBuildTargets(tree, '.dts', 'board');
 }
 
 function findShields(tree: GitTree): Promise<BuildTarget[]> {
-    return findBuildTargets(tree, '.overlay', getShieldFromOverlay);
+    return findBuildTargets(tree, '.overlay', 'shield');
 }
 
-async function findBuildTargets(
-    tree: GitTree,
-    searchExt: string,
-    handler: (tree: GitTree, name: string) => Promise<BuildTarget | undefined>
-) {
+async function findBuildTargets(tree: GitTree, searchExt: string, type: 'board' | 'shield') {
     const targets: BuildTarget[] = [];
 
     for (const file of await tree.getFiles()) {
         const [name, ext] = splitExt(file.name);
 
         if (ext.toLowerCase() === searchExt) {
-            const target = await handler(tree, name);
+            const target = await getBuildInfo(tree, name, type);
             if (target) {
                 targets.push(target);
             }
@@ -114,7 +112,7 @@ async function findBuildTargets(
     return targets;
 }
 
-async function getCommonInfo(tree: GitTree, name: string) {
+async function getBuildInfo(tree: GitTree, name: string, type: 'board' | 'shield'): Promise<BuildTarget | undefined> {
     const buildTargets: string[] = [name];
 
     if (isSplitRight(name)) {
@@ -127,32 +125,19 @@ async function getCommonInfo(tree: GitTree, name: string) {
         buildTargets.push(getSplitRightName(name));
     }
 
-    return { name, buildTargets };
+    const keymapPath = await findFileFullPath(tree, `${name}.keymap`);
+    const confPath =
+        (await findFileFullPath(tree, `${name}.conf`)) ?? (await findFileFullPath(tree, `${name}_defconfig`));
+
+    return { type, name, buildTargets, keymapPath, confPath };
 }
 
-async function getBoardFromDts(tree: GitTree, name: string): Promise<Board | undefined> {
-    const info = await getCommonInfo(tree, name);
-    if (!info) {
-        return undefined;
-    }
-
-    const isStandalone = await hasKeymap(tree, info.name);
-
-    return { type: 'board', ...info, isStandalone };
+async function findFileFullPath(tree: GitTree, name: string): Promise<string | undefined> {
+    return (await findFile(tree, name))?.path;
 }
 
-async function getShieldFromOverlay(tree: GitTree, name: string): Promise<Shield | undefined> {
-    const info = await getCommonInfo(tree, name);
-    if (!info) {
-        return undefined;
-    }
-
-    return { type: 'shield', ...info };
-}
-
-async function hasKeymap(tree: GitTree, name: string): Promise<boolean> {
-    const keymapFile = `${name}.keymap`;
-    return (await tree.getFiles()).some((file) => file.name.toLowerCase() === keymapFile.toLowerCase());
+async function findFile(tree: GitTree, name: string): Promise<GitFile | undefined> {
+    return (await tree.getFiles()).find((file) => file.name.toLowerCase() === name.toLowerCase());
 }
 
 function isSplitLeft(name: string) {
