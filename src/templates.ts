@@ -1,5 +1,4 @@
 import yaml from 'yaml';
-import parse from 'yaml/parse-cst';
 import type { FileChange } from './repository';
 import type { Build } from './targets';
 
@@ -14,10 +13,22 @@ async function fetchFile(path: string): Promise<string> {
     return await response.text();
 }
 
+function getTemplateSource(destPath: string) {
+    // Netlify doesn't seem to like dot files/directories, so drop the dot from
+    // the path to the static resource.
+    return (
+        TEMPLATE_DIR +
+        destPath
+            .split('/')
+            .map((f) => f.replace(/^\./, ''))
+            .join('/')
+    );
+}
+
 export async function getWestConfigFile(): Promise<FileChange> {
     return {
         path: WEST_FILE,
-        content: await fetchFile(TEMPLATE_DIR + WEST_FILE),
+        content: await fetchFile(getTemplateSource(WEST_FILE)),
     };
 }
 
@@ -33,7 +44,7 @@ export async function getGitHubWorkflowFile(builds: Build[]): Promise<FileChange
  * @param builds
  */
 export async function generateGitHubWorkflow(builds: Build[]) {
-    const template = await fetchFile(TEMPLATE_DIR + WORKFLOW_FILE);
+    const template = await fetchFile(getTemplateSource(WORKFLOW_FILE));
     const document = yaml.parseDocument(template);
 
     for (const build of getBuildMatrix(builds)) {
