@@ -1,16 +1,18 @@
 import React, { useReducer, useState } from 'react';
 import { ConfigWizardDispatch, WizardState, wizardStateReducer, WizardStep } from './ConfigWizardReducer';
 import ModifyRepoPage from './Modify/ModifyRepoPage';
+import { useRepo } from './RepoProvider';
 import RepoSelectPage from './Select/RepoSelectPage';
-
-const INITIAL_STATE: WizardState = {
-    step: WizardStep.SelectRepo,
-};
 
 export interface ConfigWizardProps {}
 
 const ConfigWizard: React.FunctionComponent<ConfigWizardProps> = () => {
-    const [state, dispatch] = useReducer(wizardStateReducer, INITIAL_STATE);
+    const [repo] = useRepo();
+    const initialState: WizardState = {
+        step: repo ? WizardStep.ModifyRepo : WizardStep.SelectRepo,
+    };
+
+    const [state, dispatch] = useReducer(wizardStateReducer, initialState);
 
     function getContentsForStep() {
         switch (state.step) {
