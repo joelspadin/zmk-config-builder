@@ -19,6 +19,7 @@ import { SnackbarAction, SnackbarProvider } from 'notistack';
 import PropTypes from 'prop-types';
 import React, { createContext, Dispatch, useContext, useMemo, useRef } from 'react';
 import { useLocalStorage } from 'react-use';
+import { CONFIG_BUILDER_REPO_URL } from '../config';
 import DarkModeSwitch from './DarkModeSwitch';
 import { OctokitProvider } from './OctokitProvider';
 import { AuthProvider, useSignedIn } from './SignIn/AuthProvider';
@@ -172,7 +173,7 @@ const GitHubLink: React.FunctionComponent<LinkProps> = (props) => {
             className={`${classes.iconLink} ${props.className ?? ''}`}
             target="_blank"
             aria-label="Github repository"
-            href="https://github.com/joelspadin/zmk-config-builder"
+            href={CONFIG_BUILDER_REPO_URL}
         >
             <GitHub />
         </Link>
