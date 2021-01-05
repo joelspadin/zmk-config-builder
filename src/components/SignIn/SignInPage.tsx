@@ -10,9 +10,9 @@ const useStyles = makeStyles((theme: Theme) =>
     })
 );
 
-export interface SignInFormProps {}
+export interface SignInPage {}
 
-const SignInForm: React.FunctionComponent<SignInFormProps> = () => {
+const SignInPage: React.FunctionComponent<SignInPage> = () => {
     const classes = useStyles();
 
     return (
@@ -37,4 +37,4 @@ const SignInForm: React.FunctionComponent<SignInFormProps> = () => {
     );
 };
 
-export default SignInForm;
+export default SignInPage;

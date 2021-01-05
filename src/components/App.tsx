@@ -5,6 +5,8 @@ import {
     createMuiTheme,
     createStyles,
     CssBaseline,
+    Link,
+    LinkProps,
     makeStyles,
     ThemeProvider,
     Toolbar,
@@ -12,14 +14,18 @@ import {
     useMediaQuery,
 } from '@material-ui/core';
 import { indigo, purple } from '@material-ui/core/colors';
+import { GitHub } from '@material-ui/icons';
 import { SnackbarAction, SnackbarProvider } from 'notistack';
-import React, { useMemo, useRef } from 'react';
-import ConfigWizard from './Wizard/ConfigWizard';
+import PropTypes from 'prop-types';
+import React, { createContext, Dispatch, useContext, useMemo, useRef } from 'react';
+import { useLocalStorage } from 'react-use';
+import DarkModeSwitch from './DarkModeSwitch';
 import { OctokitProvider } from './OctokitProvider';
-import { RepoProvider } from './Wizard/RepoProvider';
 import { AuthProvider, useSignedIn } from './SignIn/AuthProvider';
-import SignInForm from './SignIn/SignInForm';
+import SignInPage from './SignIn/SignInPage';
 import SignOutButton from './SignIn/SignOutButton';
+import ConfigWizard from './Wizard/ConfigWizard';
+import { RepoProvider } from './Wizard/RepoProvider';
 
 const useStyles = makeStyles((theme) =>
     createStyles({
@@ -29,6 +35,18 @@ const useStyles = makeStyles((theme) =>
         },
         title: {
             flexGrow: 1,
+        },
+        menuButton: {
+            marginRight: theme.spacing(1),
+        },
+        iconLink: {
+            color: theme.palette.text.primary,
+            '& :hover': {
+                color: theme.palette.text.secondary,
+            },
+            display: 'flex',
+            flexDirection: 'row',
+            alignItems: 'center',
         },
     })
 );
@@ -52,13 +70,17 @@ const App: React.FunctionComponent<AppProps> = () => {
 
 export default App;
 
+const DarkMode = createContext<boolean>(false);
+const DarkModeDispatch = createContext<Dispatch<boolean>>(() => {});
+
 const RootProviders: React.FunctionComponent = ({ children }) => {
-    const prefersDarkMode = useMediaQuery('(prefers-color-scheme: dark)');
+    const prefersDarkMode = useMediaQuery('(prefers-color-scheme: dark)', { noSsr: true });
+    const [darkMode, setDarkMode] = useLocalStorage('darkmode', prefersDarkMode);
 
     const theme = useMemo(() => {
         const nextTheme = createMuiTheme({
             palette: {
-                type: prefersDarkMode ? 'dark' : 'light',
+                type: darkMode ? 'dark' : 'light',
                 primary: {
                     main: indigo[400],
                 },
@@ -68,16 +90,16 @@ const RootProviders: React.FunctionComponent = ({ children }) => {
             },
         });
 
-        if (prefersDarkMode) {
+        if (darkMode) {
             nextTheme.palette.background.default = '#18191a';
             nextTheme.palette.background.paper = nextTheme.palette.grey[900];
         } else {
-            nextTheme.palette.background.default = '#fff';
+            nextTheme.palette.background.default = nextTheme.palette.common.white;
             nextTheme.palette.background.paper = nextTheme.palette.grey[100];
         }
 
         return nextTheme;
-    }, [prefersDarkMode]);
+    }, [darkMode]);
 
     const notistackRef = useRef<SnackbarProvider | null>(null);
 
@@ -91,9 +113,13 @@ const RootProviders: React.FunctionComponent = ({ children }) => {
     // TODO: change to ScopedCssBaseline if incorporating into main ZMK site.
     return (
         <ThemeProvider theme={theme}>
-            <SnackbarProvider ref={notistackRef} action={dismissAction}>
-                <AuthProvider>{children}</AuthProvider>
-            </SnackbarProvider>
+            <DarkMode.Provider value={!!darkMode}>
+                <DarkModeDispatch.Provider value={setDarkMode}>
+                    <SnackbarProvider ref={notistackRef} action={dismissAction}>
+                        <AuthProvider>{children}</AuthProvider>
+                    </SnackbarProvider>
+                </DarkModeDispatch.Provider>
+            </DarkMode.Provider>
         </ThemeProvider>
     );
 };
@@ -101,6 +127,12 @@ const RootProviders: React.FunctionComponent = ({ children }) => {
 const Header: React.FunctionComponent = () => {
     const classes = useStyles();
     const isSignedIn = useSignedIn();
+    const darkMode = useContext(DarkMode);
+    const setDarkMode = useContext(DarkModeDispatch);
+
+    function toggleDarkMode() {
+        setDarkMode(!darkMode);
+    }
 
     return (
         <AppBar position="static">
@@ -108,6 +140,8 @@ const Header: React.FunctionComponent = () => {
                 <Typography variant="h6" className={classes.title}>
                     ZMK Config Builder
                 </Typography>
+                <GitHubLink className={classes.menuButton} />
+                <DarkModeSwitch className={classes.menuButton} checked={darkMode} onChange={toggleDarkMode} />
                 {isSignedIn && <SignOutButton />}
             </Toolbar>
         </AppBar>
@@ -118,7 +152,7 @@ const AppContent: React.FunctionComponent = () => {
     const isSignedIn = useSignedIn();
 
     if (!isSignedIn) {
-        return <SignInForm />;
+        return <SignInPage />;
     }
 
     return (
@@ -128,4 +162,23 @@ const AppContent: React.FunctionComponent = () => {
             </RepoProvider>
         </OctokitProvider>
     );
+};
+
+const GitHubLink: React.FunctionComponent<LinkProps> = (props) => {
+    const classes = useStyles();
+    return (
+        <Link
+            {...props}
+            className={`${classes.iconLink} ${props.className ?? ''}`}
+            target="_blank"
+            aria-label="Github repository"
+            href="https://github.com/joelspadin/zmk-config-builder"
+        >
+            <GitHub />
+        </Link>
+    );
+};
+
+GitHubLink.propTypes = {
+    className: PropTypes.string,
 };
