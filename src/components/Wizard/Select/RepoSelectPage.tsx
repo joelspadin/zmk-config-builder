@@ -7,6 +7,7 @@ import ErrorMessage from '../../ErrorMessage';
 import { useGitHubUser } from '../../OctokitProvider';
 import { useRepo } from '../RepoProvider';
 import UnderConstruction from '../../UnderConstruction';
+import SelectRepoForm from './SelectRepoForm';
 
 enum Mode {
     CreateRepo = 'create',
@@ -51,7 +52,7 @@ const RepoSelectPage: React.FunctionComponent<RepoSelectProps> = (props) => {
                     <CreateRepoForm owner={user.value.login} />
                 </TabPanel>
                 <TabPanel value={Mode.SelectRepo}>
-                    <UnderConstruction />
+                    <SelectRepoForm owner={user.value.login} />
                 </TabPanel>
             </TabContext>
         </Typography>

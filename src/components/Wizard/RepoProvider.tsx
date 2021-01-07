@@ -2,6 +2,7 @@ import React, { createContext, Dispatch, SetStateAction, useContext } from 'reac
 import { useLocalStorage } from 'react-use';
 
 interface RepoId {
+    owner: string;
     repo: string;
     branch: string;
 }

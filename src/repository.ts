@@ -107,7 +107,10 @@ export class Repository {
     }
 
     async updateDefaultBranchToCommit(commit: Commit) {
-        await this.updateBranchToCommit(await this.getDefaultBranch(), commit);
+        const branch = await this.getDefaultBranch();
+        await this.updateBranchToCommit(branch, commit);
+
+        return branch;
     }
 
     private async createBlobForFile(change: FileChange) {
@@ -254,4 +257,13 @@ export class GitFile {
 
 function splitPath(path: string) {
     return path.replace(/^\/|\/$/, '').split('/');
+}
+
+export async function getRepoExists(octokit: Octokit, owner: string, repo: string): Promise<boolean> {
+    try {
+        const result = await octokit.repos.get({ owner, repo });
+        return result.data !== undefined;
+    } catch {
+        return false;
+    }
 }

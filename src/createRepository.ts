@@ -16,9 +16,9 @@ export async function createUserRepository(octokit: Octokit, name: string, optio
     const files = await getNewRepoFiles(octokit, builds);
     const commit = await repo.createNewCommit(files, 'Add initial keyboards');
 
-    await repo.updateDefaultBranchToCommit(commit);
+    const branch = await repo.updateDefaultBranchToCommit(commit);
 
-    return { repo, commit };
+    return { repo, commit, branch };
 }
 
 async function getNewRepoFiles(octokit: Octokit, builds: Build[]): Promise<FileChange[]> {

@@ -21,6 +21,7 @@ import React, { useContext, useReducer, useState } from 'react';
 import { useAsync, useAsyncFn } from 'react-use';
 import { USER_REPO_DEFAULT_BRANCH } from '../../../config';
 import { createUserRepository } from '../../../createRepository';
+import { getRepoExists } from '../../../repository';
 import type { Build } from '../../../targets';
 import { showModalError } from '../../../util';
 import { useOctokit } from '../../OctokitProvider';
@@ -57,15 +58,15 @@ const CreateRepoForm: React.FunctionComponent<CreateRepoFormProps> = ({ owner })
     const listValid = isKeyboardListValid(keyboards);
 
     const octokit = useOctokit();
-    const repoExists = useAsync(() => checkIfRepoExists(octokit, owner, repo), [octokit, owner, repo]);
+    const repoExists = useAsync(() => getRepoExists(octokit, owner, repo), [octokit, owner, repo]);
 
     const wizardDispatch = useContext(ConfigWizardDispatch);
     const { enqueueSnackbar } = useSnackbar();
 
     const [createState, startCreateRepo] = useAsyncFn(async () => {
         try {
-            await createRepo({ octokit, repo, isPrivate, keyboards });
-            setSelectedRepo({ repo, branch: USER_REPO_DEFAULT_BRANCH });
+            const { branch } = await createRepo({ octokit, repo, isPrivate, keyboards });
+            setSelectedRepo({ owner, repo, branch });
             return true;
         } catch (error) {
             showModalError(enqueueSnackbar, error);
@@ -103,28 +104,26 @@ const CreateRepoForm: React.FunctionComponent<CreateRepoFormProps> = ({ owner })
 
     return (
         <>
-            <form className={classes.repoForm}>
-                <Grid container direction="column" spacing={1}>
-                    <Grid item>
-                        <TextField
-                            required
-                            id="repo-name"
-                            label="Repository name"
-                            variant="standard"
-                            value={repo}
-                            onChange={handleChange}
-                            error={!repo || repoExists.value}
-                            helperText={helperText}
-                        />
-                    </Grid>
-                    <Grid item>
-                        <FormControlLabel
-                            control={<Switch checked={isPrivate} onChange={togglePrivate} />}
-                            label="Create a private repo"
-                        />
-                    </Grid>
+            <Grid container direction="column" spacing={1} className={classes.repoForm}>
+                <Grid item>
+                    <TextField
+                        required
+                        id="repo-name"
+                        label="Repository name"
+                        variant="standard"
+                        value={repo}
+                        onChange={handleChange}
+                        error={!repo || repoExists.value}
+                        helperText={helperText}
+                    />
                 </Grid>
-            </form>
+                <Grid item>
+                    <FormControlLabel
+                        control={<Switch checked={isPrivate} onChange={togglePrivate} />}
+                        label="Create a private repo"
+                    />
+                </Grid>
+            </Grid>
             <Typography variant="h6">Which keyboard(s) do you use?</Typography>
             <p>
                 Select one or more keyboards and the stock keymaps for each will be copied into your repo. We&apos;ll
@@ -194,15 +193,6 @@ function isKeyboardListValid(keyboards: Partial<Build>[]) {
     return true;
 }
 
-async function checkIfRepoExists(octokit: Octokit, owner: string, repo: string) {
-    try {
-        const result = await octokit.repos.get({ owner, repo });
-        return result.data !== undefined;
-    } catch {
-        return false;
-    }
-}
-
 interface CreateParams {
     octokit: Octokit;
     repo: string;
@@ -218,7 +208,7 @@ async function createRepo({ octokit, repo, isPrivate, keyboards }: CreateParams)
         private: isPrivate,
     });
 
-    console.log(result);
+    return result;
 }
 
 function filterKeyboards(keyboards: Partial<Build>[]): Build[] {
