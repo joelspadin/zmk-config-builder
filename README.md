@@ -1,6 +1,8 @@
 # ZMK Config Builder
 
-A web app for creating and updating ZMK user config repos.
+A web app for creating and updating user config repos for [ZMK Firmware](https://zmkfirmware.dev/).
+
+See https://zmk-config-builder.netlify.app.
 
 ## Credits
 
