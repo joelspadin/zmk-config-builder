@@ -43,8 +43,12 @@ const SignInPage: React.FunctionComponent<SignInPage> = () => {
                     This does <em>not</em> give it permissions to delete any repos.
                 </Typography>
                 <Typography variant="body1" paragraph>
-                    This app only communicates with GitHub and an external server which is used only once when signing
-                    in to authenticate this app with GitHub. All your data stays between your browser and GitHub.
+                    This app only communicates with GitHub and{' '}
+                    <Link target="_blank" href="https://github.com/joelspadin/github-oauth-client">
+                        an external server
+                    </Link>{' '}
+                    which is used only once when signing in to authenticate this app with GitHub. All your data stays
+                    between your browser and GitHub.
                 </Typography>
                 <Typography variant="body1" paragraph>
                     This app will use the following data from GitHub:
