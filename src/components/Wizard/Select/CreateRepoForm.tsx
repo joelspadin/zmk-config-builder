@@ -15,21 +15,20 @@ import {
 } from '@material-ui/core';
 import type { Octokit } from '@octokit/rest';
 import { RepoPushIcon } from '@primer/octicons-react';
+import { useSnackbar } from 'notistack';
 import PropTypes from 'prop-types';
 import React, { useContext, useReducer, useState } from 'react';
 import { useAsync, useAsyncFn } from 'react-use';
 import { USER_REPO_DEFAULT_BRANCH } from '../../../config';
+import { createUserRepository } from '../../../createRepository';
+import type { Build } from '../../../targets';
+import { showModalError } from '../../../util';
+import { useOctokit } from '../../OctokitProvider';
 import { ConfigWizardDispatch, WizardStep } from '../ConfigWizardReducer';
 import KeyboardList from '../KeyboardList';
 import { KeyboardListDispatch, keyboardListReducer } from '../KeyboardListReducer';
-import { useOctokit } from '../../OctokitProvider';
 import RepoLink from '../RepoLink';
 import { useRepo } from '../RepoProvider';
-import type { Build } from '../../../targets';
-import { generateGitHubWorkflow } from '../../../templates';
-import { createUserRepository } from '../../../createRepository';
-import { showModalError } from '../../../util';
-import { useSnackbar } from 'notistack';
 
 export interface CreateRepoFormProps {
     owner: string;
@@ -39,15 +38,8 @@ const EMPTY_KEYBOARDS = [{ keyboard: undefined, controller: undefined }];
 
 const useStyles = makeStyles((theme) =>
     createStyles({
-        root: {
-            display: 'flex',
-            flexDirection: 'column',
-            flexWrap: 'wrap',
+        repoForm: {
             marginBottom: theme.spacing(4),
-            '& > *': {
-                marginTop: theme.spacing(1),
-                marginBottom: theme.spacing(1),
-            },
         },
         backdrop: {
             zIndex: theme.zIndex.drawer + 1,
@@ -111,21 +103,27 @@ const CreateRepoForm: React.FunctionComponent<CreateRepoFormProps> = ({ owner })
 
     return (
         <>
-            <form className={classes.root}>
-                <TextField
-                    required
-                    id="repo-name"
-                    label="Repository name"
-                    variant="standard"
-                    value={repo}
-                    onChange={handleChange}
-                    error={!repo || repoExists.value}
-                    helperText={helperText}
-                />
-                <FormControlLabel
-                    control={<Switch checked={isPrivate} onChange={togglePrivate} />}
-                    label="Create a private repo"
-                />
+            <form className={classes.repoForm}>
+                <Grid container direction="column" spacing={1}>
+                    <Grid item>
+                        <TextField
+                            required
+                            id="repo-name"
+                            label="Repository name"
+                            variant="standard"
+                            value={repo}
+                            onChange={handleChange}
+                            error={!repo || repoExists.value}
+                            helperText={helperText}
+                        />
+                    </Grid>
+                    <Grid item>
+                        <FormControlLabel
+                            control={<Switch checked={isPrivate} onChange={togglePrivate} />}
+                            label="Create a private repo"
+                        />
+                    </Grid>
+                </Grid>
             </form>
             <Typography variant="h6">Which keyboard(s) do you use?</Typography>
             <p>
