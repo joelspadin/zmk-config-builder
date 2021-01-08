@@ -19,7 +19,6 @@ import { useSnackbar } from 'notistack';
 import PropTypes from 'prop-types';
 import React, { useContext, useReducer, useState } from 'react';
 import { useAsync, useAsyncFn } from 'react-use';
-import { USER_REPO_DEFAULT_BRANCH } from '../../../config';
 import { createUserRepository } from '../../../createRepository';
 import { getRepoExists } from '../../../repository';
 import type { Build } from '../../../targets';
