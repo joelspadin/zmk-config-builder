@@ -65,7 +65,7 @@ const AddKeymapForm: React.FunctionComponent<AddKeymapFormProps> = ({ repo, bran
                     disabled={!listValid}
                     onClick={handleAddKeymaps}
                 >
-                    Update repo
+                    Add keymaps
                 </Button>
             </Grid>
             <ModifyDialog state={state} pullRequestUrl={result.value} onClose={handleDone} />
