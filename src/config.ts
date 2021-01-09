@@ -10,5 +10,3 @@ export const GITHUB_SCOPES = ['repo', 'workflow'];
 export const ZMK_OWNER = 'zmkfirmware';
 export const ZMK_REPO = 'zmk';
 export const ZMK_MAIN_BRANCH = 'main';
-
-export const COMMIT_AUTHOR = { name: 'ZMK Config Builder', email: 'config-builder@zmkfirmware.dev' };

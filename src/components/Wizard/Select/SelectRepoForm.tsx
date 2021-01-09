@@ -1,6 +1,17 @@
-import React, { useContext } from 'react';
+import React, { useContext, useState } from 'react';
 import PropTypes from 'prop-types';
-import { Button, createStyles, Grid, makeStyles, TextField } from '@material-ui/core';
+import {
+    Button,
+    createStyles,
+    Dialog,
+    DialogActions,
+    DialogContent,
+    DialogTitle,
+    Grid,
+    makeStyles,
+    TextField,
+    Typography,
+} from '@material-ui/core';
 import { Autocomplete } from '@material-ui/lab';
 import type { Octokit } from '@octokit/rest';
 import { useOctokit } from '../../OctokitProvider';
@@ -8,6 +19,10 @@ import { useAsync } from 'react-use';
 import { useRepo } from '../RepoProvider';
 import { getRepoExists, Repository } from '../../../repository';
 import { ConfigWizardDispatch, WizardStep } from '../ConfigWizardReducer';
+import { isUserConfigRepo } from '../../../zmk';
+import RepoLink from '../RepoLink';
+import { showModalError } from '../../../util';
+import { OptionsObject, SnackbarKey, SnackbarMessage, useSnackbar } from 'notistack';
 
 const useStyles = makeStyles((theme) =>
     createStyles({
@@ -22,9 +37,13 @@ export interface SelectRepoFormProps {
 }
 
 const SelectRepoForm: React.FunctionComponent<SelectRepoFormProps> = ({ owner }) => {
+    const { enqueueSnackbar } = useSnackbar();
     const classes = useStyles();
     const octokit = useOctokit();
     const [prevRepo, setSelectedRepo] = useRepo();
+    const [confirmOpen, setConfimOpen] = useState(false);
+    const [emptyRepoOpen, setEmptyRepoOpen] = useState(false);
+
     const wizardDispatch = useContext(ConfigWizardDispatch);
 
     const initialSelection: RepoItem | null = prevRepo ? { name: prevRepo.repo, owner: prevRepo.owner } : null;
@@ -67,12 +86,41 @@ const SelectRepoForm: React.FunctionComponent<SelectRepoFormProps> = ({ owner })
         setBranch(newValue);
     }
 
-    function handleSelectRepo() {
+    async function handleSelectRepo() {
         if (repo && branch) {
-            // TODO: verify this looks like an empty repo or zmk-config repo
-            setSelectedRepo({ owner: repo.owner, repo: repo.name, branch });
-            wizardDispatch({ type: 'set-step', step: WizardStep.ModifyRepo });
+            try {
+                if (await isUserConfigRepo(new Repository(octokit, repo.owner, repo.name), branch)) {
+                    selectRepo(repo, branch);
+                } else {
+                    setConfimOpen(true);
+                }
+            } catch (error) {
+                if (error instanceof Error && error.message.includes('Git Repository is empty')) {
+                    setEmptyRepoOpen(true);
+                } else {
+                    showModalError(enqueueSnackbar, error);
+                }
+            }
         }
+    }
+
+    function handleCloseConfirm() {
+        setConfimOpen(false);
+    }
+
+    function handleConfirm() {
+        if (repo && branch) {
+            selectRepo(repo, branch);
+        }
+    }
+
+    function handleCloseEmptyRepo() {
+        setEmptyRepoOpen(false);
+    }
+
+    function selectRepo(repo: RepoItem, branch: string) {
+        setSelectedRepo({ owner: repo.owner, repo: repo.name, branch });
+        wizardDispatch({ type: 'set-step', step: WizardStep.ModifyRepo });
     }
 
     return (
@@ -88,6 +136,9 @@ const SelectRepoForm: React.FunctionComponent<SelectRepoFormProps> = ({ owner })
                         onChange={handleRepoChange}
                         options={repos.value ?? []}
                         getOptionLabel={(option) => `${option.owner}/${option.name}`}
+                        getOptionSelected={(option, value) =>
+                            option.owner === value.owner && option.name === value.name
+                        }
                         renderOption={(option) => (
                             <span>
                                 <span className={classes.owner}>{option.owner}/</span>
@@ -119,10 +170,55 @@ const SelectRepoForm: React.FunctionComponent<SelectRepoFormProps> = ({ owner })
                 </Grid>
                 <Grid item container direction="row" justify="flex-end">
                     <Button variant="contained" color="primary" disabled={!canSelectRepo} onClick={handleSelectRepo}>
-                        Select repo
+                        Use this repo
                     </Button>
                 </Grid>
             </Grid>
+            <Dialog
+                disableBackdropClick
+                disableEscapeKeyDown
+                maxWidth="xs"
+                aria-labelledby="confirmation-dialog-title"
+                open={confirmOpen}
+            >
+                <DialogTitle id="confirmation-dialog-title">Use this repo?</DialogTitle>
+                <DialogContent>
+                    <Typography variant="body1">
+                        <RepoLink owner={repo?.owner ?? ''} repo={repo?.name ?? ''} /> doesn&apos;t look like a ZMK user
+                        config repo. Are you sure you want to use this repo?
+                    </Typography>
+                </DialogContent>
+                <DialogActions>
+                    <Button onClick={handleCloseConfirm} color="primary" autoFocus>
+                        Cancel
+                    </Button>
+                    <Button onClick={handleConfirm} color="primary">
+                        Use this repo anyways
+                    </Button>
+                </DialogActions>
+            </Dialog>
+            <Dialog
+                aria-aria-labelledby="empty-repo-dialog-title"
+                maxWidth="xs"
+                open={emptyRepoOpen}
+                onClose={handleCloseEmptyRepo}
+            >
+                <DialogTitle id="empty-repo-dialog-title">Repository is empty</DialogTitle>
+                <DialogContent>
+                    <Typography variant="body1" paragraph>
+                        <RepoLink owner={repo?.owner ?? ''} repo={repo?.name ?? ''} /> can&apos;t be used because it is
+                        empty. Please create a commit in it first.
+                    </Typography>
+                    <Typography variant="body1">
+                        Open the link above for instructions on how to create an initial commit.
+                    </Typography>
+                </DialogContent>
+                <DialogActions>
+                    <Button onClick={handleCloseEmptyRepo} color="primary" autoFocus>
+                        OK
+                    </Button>
+                </DialogActions>
+            </Dialog>
         </>
     );
 };

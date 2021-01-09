@@ -1,5 +1,4 @@
 import type { Octokit } from '@octokit/rest';
-import { COMMIT_AUTHOR } from './config';
 
 export interface RepoCreateOptions {
     private?: boolean;
@@ -76,7 +75,15 @@ export class Repository {
         return new Commit(this, commitSha, commitData.tree.sha);
     }
 
-    async createNewCommit(changedFiles: FileChange[], message: string, branch?: string): Promise<Commit> {
+    async createBranch(name: string, commit: Commit) {
+        await this.octokit.git.createRef({
+            ...this.params,
+            ref: `refs/heads/${name}`,
+            sha: commit.sha,
+        });
+    }
+
+    async createCommit(changedFiles: FileChange[], message: string, branch?: string): Promise<Commit> {
         const parent = await this.getLatestCommit(branch);
 
         const blobs = await Promise.all(changedFiles.map((f) => this.createBlobForFile(f)));
@@ -92,7 +99,6 @@ export class Repository {
             message,
             tree: tree.data.sha,
             parents: [parent.sha],
-            author: COMMIT_AUTHOR,
         });
 
         return new Commit(this, commit.data.sha, tree.data.sha);
@@ -113,6 +119,21 @@ export class Repository {
         return branch;
     }
 
+    async createpullRequest(commit: Commit, targetBranch: string) {
+        const prBranch = await this.getTemporaryBranchName();
+        await this.createBranch(prBranch, commit);
+
+        const message = await commit.getCommitMessage();
+
+        return await this.octokit.pulls.create({
+            ...this.params,
+            head: prBranch,
+            base: targetBranch,
+            title: message.split('\n')[0],
+            body: message,
+        });
+    }
+
     private async createBlobForFile(change: FileChange) {
         const { path } = change;
         let sha: string | null;
@@ -129,13 +150,42 @@ export class Repository {
 
         return { path, sha };
     }
+
+    private async getTemporaryBranchName() {
+        const branches = await this.octokit.paginate(this.octokit.repos.listBranches, this.params);
+        const branchNames = branches.map((b) => b.name);
+
+        let name: string;
+        let index = 0;
+        do {
+            index++;
+            name = `zmk-config-builder/update-${index}`;
+        } while (branchNames.includes(name));
+
+        return name;
+    }
 }
 
 export class Commit {
+    private message?: string;
+
     tree: GitTree;
 
     constructor(private repo: Repository, public readonly sha: string, treeSha: string) {
         this.tree = new GitTree(this.repo, '', treeSha);
+    }
+
+    async getCommitMessage() {
+        if (this.message === undefined) {
+            const result = await this.repo.octokit.git.getCommit({
+                ...this.repo.params,
+                commit_sha: this.sha,
+            });
+
+            this.message = result.data.message;
+        }
+
+        return this.message;
     }
 }
 

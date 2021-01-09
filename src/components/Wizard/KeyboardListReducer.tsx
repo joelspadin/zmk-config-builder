@@ -22,7 +22,13 @@ interface SetControllerAction {
     controller: BuildTarget | undefined;
 }
 
-export type KeyboardListAction = AddAction | RemoveAction | SetKeyboardAction | SetControllerAction;
+interface ClearAction {
+    type: 'clear';
+}
+
+export const EMPTY_KEYBOARDS = [{ keyboard: undefined, controller: undefined }];
+
+export type KeyboardListAction = AddAction | RemoveAction | SetKeyboardAction | SetControllerAction | ClearAction;
 
 export const KeyboardListDispatch = createContext<Dispatch<KeyboardListAction>>(() => {});
 
@@ -50,5 +56,22 @@ export const keyboardListReducer: React.Reducer<Partial<Build>[], KeyboardListAc
                 return state;
             }
             return state.map((item, i) => (i === action.index ? { ...item, controller: action.controller } : item));
+
+        case 'clear':
+            return EMPTY_KEYBOARDS;
     }
 };
+
+export function isKeyboardListValid(keyboards: Partial<Build>[]) {
+    for (const item of keyboards) {
+        if (item.keyboard?.type === 'shield' && item.controller === undefined) {
+            return false;
+        }
+    }
+
+    return true;
+}
+
+export function filterKeyboards(keyboards: Partial<Build>[]): Build[] {
+    return keyboards.filter((item) => item.keyboard !== undefined) as Build[];
+}

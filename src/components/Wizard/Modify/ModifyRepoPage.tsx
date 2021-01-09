@@ -11,16 +11,19 @@ import {
     Typography,
 } from '@material-ui/core';
 import { ArrowBack } from '@material-ui/icons';
-import { Alert, AlertTitle } from '@material-ui/lab';
+import { TabContext, TabPanel } from '@material-ui/lab';
 import { GitBranchIcon } from '@primer/octicons-react';
 import PropTypes from 'prop-types';
-import React, { useContext, useState } from 'react';
-import { ConfigWizardDispatch, WizardStep } from '../ConfigWizardReducer';
+import React, { useContext, useMemo, useState } from 'react';
+import { Repository } from '../../../repository';
 import ErrorMessage from '../../ErrorMessage';
-import { useGitHubUser } from '../../OctokitProvider';
+import { useGitHubUser, useOctokit } from '../../OctokitProvider';
+import UnderConstruction from '../../UnderConstruction';
+import { ConfigWizardDispatch, WizardStep } from '../ConfigWizardReducer';
 import RepoLink from '../RepoLink';
 import { useRepo } from '../RepoProvider';
-import UnderConstruction from '../../UnderConstruction';
+import AddKeymapsForm from './AddKeymapForm';
+import InitializeRepoForm from './InitializeRepoForm';
 
 const useStyles = makeStyles((theme) =>
     createStyles({
@@ -28,6 +31,8 @@ const useStyles = makeStyles((theme) =>
             marginBottom: theme.spacing(4),
             display: 'flex',
             flexDirection: 'row',
+            flexWrap: 'wrap',
+            justifyContent: 'flex-end',
             alignItems: 'center',
         },
         repo: {
@@ -43,6 +48,7 @@ const useStyles = makeStyles((theme) =>
 
 enum Action {
     None = '',
+    InitRepo = 'init-repo',
     AddKeymap = 'add-keymap',
     NewKeyboard = 'new-keyboard',
     ChangeWorkflow = 'change-workflow',
@@ -51,11 +57,17 @@ enum Action {
 export interface ModifyRepoProps {}
 
 const ModifyRepoPage: React.FunctionComponent<ModifyRepoProps> = (props) => {
+    const octokit = useOctokit();
     const classes = useStyles();
     const user = useGitHubUser();
     const wizardDispatch = useContext(ConfigWizardDispatch);
-    const [repo] = useRepo();
+    const [repoId] = useRepo();
     const [action, setAction] = useState(Action.None);
+
+    const repo = useMemo(() => {
+        return repoId ? new Repository(octokit, repoId.owner, repoId.repo) : undefined;
+    }, [octokit, repoId]);
+    const branch = repoId?.branch ?? '';
 
     function handleReturn() {
         wizardDispatch({ type: 'set-step', step: WizardStep.SelectRepo });
@@ -85,36 +97,54 @@ const ModifyRepoPage: React.FunctionComponent<ModifyRepoProps> = (props) => {
         <Typography component="div">
             <Typography variant="h6" className={classes.title}>
                 <span className={classes.repo}>
-                    Updating <RepoLink owner={user.value.login} repo={repo.repo} />
+                    Updating <RepoLink owner={user.value.login} repo={repo.name} />
                 </span>
                 <span className={classes.branch}>
-                    <GitBranchIcon size={20} /> {repo.branch}
+                    <GitBranchIcon size={20} /> {branch}
                 </span>
                 <Button startIcon={<ArrowBack />} onClick={handleReturn}>
-                    Change repo
+                    Change repo/branch
                 </Button>
             </Typography>
-            <FormControl>
-                <FormLabel>What would you like to do?</FormLabel>
-                <RadioGroup aria-label="repo action" name="action" value={action} onChange={handleChange}>
-                    <FormControlLabel
-                        value={Action.AddKeymap}
-                        control={<Radio />}
-                        label="Make a keymap for a keyboard ZMK already supports"
-                    />
-                    <FormControlLabel
-                        value={Action.NewKeyboard}
-                        control={<Radio />}
-                        label="Add support for a new keyboard to ZMK "
-                    />
-                    <FormControlLabel
-                        value={Action.ChangeWorkflow}
-                        control={<Radio />}
-                        label="Change which firmware GitHub automatically builds"
-                    />
-                </RadioGroup>
-            </FormControl>
-            <UnderConstruction />
+            <TabContext value={action}>
+                <FormControl>
+                    <FormLabel>What would you like to do?</FormLabel>
+                    <RadioGroup aria-label="repo action" name="action" value={action} onChange={handleChange}>
+                        <FormControlLabel
+                            value={Action.InitRepo}
+                            control={<Radio />}
+                            label="Initialize the ZMK config repo"
+                        />
+                        <FormControlLabel
+                            value={Action.AddKeymap}
+                            control={<Radio />}
+                            label="Add a keymap for a keyboard ZMK already supports"
+                        />
+                        <FormControlLabel
+                            value={Action.NewKeyboard}
+                            control={<Radio />}
+                            label="Add support for a new keyboard to ZMK "
+                        />
+                        <FormControlLabel
+                            value={Action.ChangeWorkflow}
+                            control={<Radio />}
+                            label="Change which firmware GitHub automatically builds"
+                        />
+                    </RadioGroup>
+                </FormControl>
+                <TabPanel value={Action.InitRepo}>
+                    <InitializeRepoForm repo={repo} branch={branch} />
+                </TabPanel>
+                <TabPanel value={Action.AddKeymap}>
+                    <AddKeymapsForm repo={repo} branch={branch} />
+                </TabPanel>
+                <TabPanel value={Action.NewKeyboard}>
+                    <UnderConstruction />
+                </TabPanel>
+                <TabPanel value={Action.ChangeWorkflow}>
+                    <UnderConstruction />
+                </TabPanel>
+            </TabContext>
         </Typography>
     );
 };

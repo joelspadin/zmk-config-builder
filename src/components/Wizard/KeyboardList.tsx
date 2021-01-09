@@ -11,22 +11,22 @@ import {
 import { Add } from '@material-ui/icons';
 import { Alert, AlertTitle } from '@material-ui/lab';
 import type { Octokit } from '@octokit/rest';
+import PropTypes from 'prop-types';
 import React, { useContext } from 'react';
 import { useAsyncRetry } from 'react-use';
-import { ZMK_MAIN_BRANCH, ZMK_OWNER, ZMK_REPO } from '../../config';
-import { Repository } from '../../repository';
+import { ZMK_MAIN_BRANCH } from '../../config';
 import { Build, discoverBuildTargets, partitionBuildTargets } from '../../targets';
+import { getZmkRepo } from '../../zmk';
+import { useOctokit } from '../OctokitProvider';
 import KeyboardItem from './KeyboardItem';
 import { KeyboardListDispatch } from './KeyboardListReducer';
-import { useOctokit } from '../OctokitProvider';
-import PropTypes from 'prop-types';
-import { getZmkRepo } from '../../zmk';
 
 export interface KeyboardListProps {
     keyboards: Partial<Build>[];
+    noController?: boolean;
 }
 
-const KeyboardList: React.FunctionComponent<KeyboardListProps> = ({ keyboards }) => {
+const KeyboardList: React.FunctionComponent<KeyboardListProps> = ({ keyboards, noController }) => {
     const octokit = useOctokit();
     const result = useAsyncRetry(() => getKeyboards(octokit), [octokit]);
 
@@ -67,6 +67,7 @@ const KeyboardList: React.FunctionComponent<KeyboardListProps> = ({ keyboards })
                     controllerOptions={result.value?.controllers ?? []}
                     keyboard={item.keyboard}
                     controller={item.controller}
+                    noController={noController}
                 />
             ))}
             <AddKeyboardItem />
@@ -76,6 +77,7 @@ const KeyboardList: React.FunctionComponent<KeyboardListProps> = ({ keyboards })
 
 KeyboardList.propTypes = {
     keyboards: PropTypes.array.isRequired,
+    noController: PropTypes.bool,
 };
 
 export default KeyboardList;

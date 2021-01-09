@@ -3,8 +3,8 @@ import type { FileChange } from './repository';
 import type { Build } from './targets';
 
 const TEMPLATE_DIR = '/templates/';
-const WORKFLOW_FILE = '.github/workflows/build.yml';
-const WEST_FILE = 'config/west.yml';
+export const WORKFLOW_FILE = '.github/workflows/build.yml';
+export const WEST_FILE = 'config/west.yml';
 
 const MATRIX_NODE = ['jobs', 'build', 'strategy', 'matrix', 'include'];
 

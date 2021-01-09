@@ -26,15 +26,19 @@ import { showModalError } from '../../../util';
 import { useOctokit } from '../../OctokitProvider';
 import { ConfigWizardDispatch, WizardStep } from '../ConfigWizardReducer';
 import KeyboardList from '../KeyboardList';
-import { KeyboardListDispatch, keyboardListReducer } from '../KeyboardListReducer';
+import {
+    EMPTY_KEYBOARDS,
+    filterKeyboards,
+    isKeyboardListValid,
+    KeyboardListDispatch,
+    keyboardListReducer,
+} from '../KeyboardListReducer';
 import RepoLink from '../RepoLink';
 import { useRepo } from '../RepoProvider';
 
 export interface CreateRepoFormProps {
     owner: string;
 }
-
-const EMPTY_KEYBOARDS = [{ keyboard: undefined, controller: undefined }];
 
 const useStyles = makeStyles((theme) =>
     createStyles({
@@ -123,7 +127,7 @@ const CreateRepoForm: React.FunctionComponent<CreateRepoFormProps> = ({ owner })
                     />
                 </Grid>
             </Grid>
-            <Typography variant="h6">Which keyboard(s) do you use?</Typography>
+            <Typography variant="h6">Which keyboards do you use?</Typography>
             <p>
                 Select one or more keyboards and the stock keymaps for each will be copied into your repo. We&apos;ll
                 also set up GitHub to automatically build firmware for these keyboards every time you push a change. You
@@ -182,16 +186,6 @@ CreateRepoForm.propTypes = {
 
 export default CreateRepoForm;
 
-function isKeyboardListValid(keyboards: Partial<Build>[]) {
-    for (const item of keyboards) {
-        if (item.keyboard?.type === 'shield' && item.controller === undefined) {
-            return false;
-        }
-    }
-
-    return true;
-}
-
 interface CreateParams {
     octokit: Octokit;
     repo: string;
@@ -208,8 +202,4 @@ async function createRepo({ octokit, repo, isPrivate, keyboards }: CreateParams)
     });
 
     return result;
-}
-
-function filterKeyboards(keyboards: Partial<Build>[]): Build[] {
-    return keyboards.filter((item) => item.keyboard !== undefined) as Build[];
 }

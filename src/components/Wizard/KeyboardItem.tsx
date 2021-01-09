@@ -36,6 +36,7 @@ export interface KeyboardItemProps {
     index: number;
     keyboard?: BuildTarget;
     controller?: BuildTarget;
+    noController?: boolean;
 }
 
 const KeyboardItem: React.FunctionComponent<KeyboardItemProps> = (props) => {
@@ -75,7 +76,7 @@ const KeyboardItem: React.FunctionComponent<KeyboardItemProps> = (props) => {
                             {getMenuItems(props.keyboardOptions)}
                         </TextField>
                     </Grid>
-                    {props.keyboard?.type === 'shield' && (
+                    {!props.noController && props.keyboard?.type === 'shield' && (
                         <Grid item xs>
                             <TextField
                                 select
@@ -110,6 +111,7 @@ KeyboardItem.propTypes = {
     index: PropTypes.number.isRequired,
     keyboard: PropTypes.any,
     controller: PropTypes.any,
+    noController: PropTypes.bool,
 };
 
 export default KeyboardItem;
