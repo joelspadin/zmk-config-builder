@@ -1,4 +1,4 @@
-import React, { useReducer, useState } from 'react';
+import React, { useReducer } from 'react';
 import { ConfigWizardDispatch, WizardState, wizardStateReducer, WizardStep } from './ConfigWizardReducer';
 import ModifyRepoPage from './Modify/ModifyRepoPage';
 import { useRepo } from './RepoProvider';

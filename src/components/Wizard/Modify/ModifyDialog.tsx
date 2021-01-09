@@ -1,5 +1,3 @@
-import React from 'react';
-import PropTypes from 'prop-types';
 import {
     Button,
     Dialog,
@@ -10,6 +8,8 @@ import {
     Link,
     Typography,
 } from '@material-ui/core';
+import PropTypes from 'prop-types';
+import React from 'react';
 
 export enum ModifyState {
     None,

@@ -1,6 +1,14 @@
-import React, { useReducer, useState } from 'react';
-import type { Repository } from '../../../repository';
+import { Button, Grid, Typography } from '@material-ui/core';
+import { RepoPushIcon } from '@primer/octicons-react';
+import { useSnackbar } from 'notistack';
 import PropTypes from 'prop-types';
+import React, { useReducer, useState } from 'react';
+import { useAsyncFn } from 'react-use';
+import { initUserRepository } from '../../../createRepository';
+import type { Repository } from '../../../repository';
+import type { Build } from '../../../targets';
+import { showModalError } from '../../../util';
+import KeyboardList from '../KeyboardList';
 import {
     EMPTY_KEYBOARDS,
     filterKeyboards,
@@ -8,15 +16,7 @@ import {
     KeyboardListDispatch,
     keyboardListReducer,
 } from '../KeyboardListReducer';
-import { Button, Grid, Typography } from '@material-ui/core';
-import KeyboardList from '../KeyboardList';
-import { RepoPushIcon } from '@primer/octicons-react';
-import { useAsyncFn } from 'react-use';
-import { initUserRepository } from '../../../createRepository';
-import type { Build } from '../../../targets';
 import ModifyDialog, { ModifyState } from './ModifyDialog';
-import { useSnackbar } from 'notistack';
-import { showModalError } from '../../../util';
 
 interface InitializeRepoFormProps {
     repo: Repository;

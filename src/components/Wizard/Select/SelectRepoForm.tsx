@@ -1,5 +1,3 @@
-import React, { useContext, useState } from 'react';
-import PropTypes from 'prop-types';
 import {
     Button,
     createStyles,
@@ -14,15 +12,17 @@ import {
 } from '@material-ui/core';
 import { Autocomplete } from '@material-ui/lab';
 import type { Octokit } from '@octokit/rest';
-import { useOctokit } from '../../OctokitProvider';
+import { useSnackbar } from 'notistack';
+import PropTypes from 'prop-types';
+import React, { useContext, useState } from 'react';
 import { useAsync } from 'react-use';
-import { useRepo } from '../RepoProvider';
 import { getRepoExists, Repository } from '../../../repository';
-import { ConfigWizardDispatch, WizardStep } from '../ConfigWizardReducer';
-import { isUserConfigRepo } from '../../../zmk';
-import RepoLink from '../RepoLink';
 import { showModalError } from '../../../util';
-import { OptionsObject, SnackbarKey, SnackbarMessage, useSnackbar } from 'notistack';
+import { isUserConfigRepo } from '../../../zmk';
+import { useOctokit } from '../../OctokitProvider';
+import { ConfigWizardDispatch, WizardStep } from '../ConfigWizardReducer';
+import RepoLink from '../RepoLink';
+import { useRepo } from '../RepoProvider';
 
 const useStyles = makeStyles((theme) =>
     createStyles({

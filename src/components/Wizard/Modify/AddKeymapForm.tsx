@@ -1,23 +1,16 @@
-import React, { useReducer, useState } from 'react';
-import type { Repository } from '../../../repository';
-import PropTypes from 'prop-types';
-import {
-    EMPTY_KEYBOARDS,
-    filterKeyboards,
-    isKeyboardListValid,
-    KeyboardListDispatch,
-    keyboardListReducer,
-} from '../KeyboardListReducer';
 import { Button, Grid, Typography } from '@material-ui/core';
-import KeyboardList from '../KeyboardList';
 import { RepoPushIcon } from '@primer/octicons-react';
-import { useAsyncFn } from 'react-use';
-import { initUserRepository } from '../../../createRepository';
-import type { Build } from '../../../targets';
-import ModifyDialog, { ModifyState } from './ModifyDialog';
 import { useSnackbar } from 'notistack';
+import PropTypes from 'prop-types';
+import React, { useReducer, useState } from 'react';
+import { useAsyncFn } from 'react-use';
+import type { Repository } from '../../../repository';
+import type { Build } from '../../../targets';
 import { showModalError } from '../../../util';
 import { getNewKeymapFiles } from '../../../zmk';
+import KeyboardList from '../KeyboardList';
+import { EMPTY_KEYBOARDS, filterKeyboards, KeyboardListDispatch, keyboardListReducer } from '../KeyboardListReducer';
+import ModifyDialog, { ModifyState } from './ModifyDialog';
 
 interface AddKeymapFormProps {
     repo: Repository;
@@ -56,7 +49,7 @@ const AddKeymapForm: React.FunctionComponent<AddKeymapFormProps> = ({ repo, bran
 
     return (
         <>
-            <Typography variant="h6">Which keyboard(s) should be added?</Typography>
+            <Typography variant="h6">Which keyboards should be added?</Typography>
             <p>
                 Select one or more keyboards and the stock keymaps for each will be copied into your repo. You can then
                 edit them to customize your keymaps.
