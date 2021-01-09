@@ -1,6 +1,6 @@
 import type { Octokit } from '@octokit/rest';
 import { ZMK_OWNER, ZMK_REPO } from './config';
-import { Commit, FileChange, Repository } from './repository';
+import { Commit, dedupeFiles, FileChange, Repository } from './repository';
 import type { Build } from './targets';
 import { getGitHubWorkflowFile, getWestConfigFile, WEST_FILE } from './templates';
 import { basename } from './util';
@@ -68,16 +68,6 @@ export async function getNewKeymapFiles(octokit: Octokit, builds: Build[]): Prom
     // We can get duplicate entries if the same board/shield is used multiple times.
     // Only change each file once.
     return dedupeFiles(files);
-}
-
-export function dedupeFiles(files: FileChange[]): FileChange[] {
-    const map = new Map<string, FileChange>();
-
-    for (const file of files) {
-        map.set(file.path, file);
-    }
-
-    return [...map.values()];
 }
 
 export async function* getBuildConfigFiles(source: Commit, build: Build): AsyncGenerator<FileChange> {

@@ -106,6 +106,10 @@ const ModifyRepoPage: React.FunctionComponent<ModifyRepoProps> = (props) => {
                     Change repo/branch
                 </Button>
             </Typography>
+            <Typography variant="body1" paragraph>
+                Any changes you make below will be made as a pull request instead of a direct commit on the selected
+                branch. You can then inspect the changes and choose whether to approve them.
+            </Typography>
             <TabContext value={action}>
                 <FormControl>
                     <FormLabel>What would you like to do?</FormLabel>

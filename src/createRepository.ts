@@ -26,7 +26,7 @@ export async function createUserRepository(
 
 export async function initUserRepository(repo: Repository, branch: string, options: UserRepoOptions) {
     const files = await getNewRepoFiles(repo.octokit, options.builds);
-    const commit = await repo.createCommit(files, INIT_REPO_COMMIT_MESSAGE, branch);
+    const commit = await repo.createCommit(files, INIT_REPO_COMMIT_MESSAGE, { branch });
 
-    return await repo.createpullRequest(commit, branch);
+    return await repo.createpullRequest(commit, branch, 'init-repo');
 }

@@ -1,4 +1,5 @@
 import { Button, Grid, Typography } from '@material-ui/core';
+import { Alert } from '@material-ui/lab';
 import { RepoPushIcon } from '@primer/octicons-react';
 import { useSnackbar } from 'notistack';
 import PropTypes from 'prop-types';
@@ -62,6 +63,10 @@ const InitializeRepoForm: React.FunctionComponent<InitializeRepoFormProps> = ({ 
                 also set up GitHub to automatically build firmware for these keyboards every time you push a change. You
                 can add more keyboards later.
             </p>
+            <Alert severity="info">
+                If the repo already has a keymap for a keyboard, selecting that keyboard below will overwrite it with
+                the stock keymap.
+            </Alert>
             <KeyboardListDispatch.Provider value={dispatch}>
                 <KeyboardList keyboards={keyboards} />
             </KeyboardListDispatch.Provider>

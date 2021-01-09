@@ -1,4 +1,4 @@
-import type { OptionsObject, ProviderContext, SnackbarKey, SnackbarMessage } from 'notistack';
+import type { OptionsObject, SnackbarKey, SnackbarMessage } from 'notistack';
 
 export function getPopupPosition(parent: Window, width: number, height: number) {
     const top = parent.top.screenY + (parent.top.outerHeight - height) / 2;
@@ -25,7 +25,20 @@ export function showModalError(
         variant: 'error',
         persist: true,
         anchorOrigin: {
-            vertical: 'top',
+            vertical: 'bottom',
+            horizontal: 'center',
+        },
+    });
+}
+
+export function showMessage(
+    enqueueSnackbar: (message: SnackbarMessage, options?: OptionsObject) => SnackbarKey,
+    message: SnackbarMessage
+) {
+    enqueueSnackbar(message, {
+        variant: 'info',
+        anchorOrigin: {
+            vertical: 'bottom',
             horizontal: 'center',
         },
     });

@@ -16,10 +16,22 @@ interface DeleteFile {
 
 export type FileChange = EditFile | DeleteFile;
 
+export interface CommitOptions {
+    branch?: string;
+    noOverwrite?: boolean;
+}
+
+export class NoFilesChangedError extends Error {
+    constructor() {
+        super('No files changed.');
+    }
+}
+
 export class Repository {
     private defaultBranch?: string;
 
     static async create(octokit: Octokit, name: string, options?: RepoCreateOptions): Promise<Repository> {
+        // Check if the repo already exists first.
         try {
             const owner = (await octokit.users.getAuthenticated()).data.login;
             const existing = await octokit.repos.get({ owner, repo: name });
@@ -83,8 +95,17 @@ export class Repository {
         });
     }
 
-    async createCommit(changedFiles: FileChange[], message: string, branch?: string): Promise<Commit> {
+    async createCommit(changedFiles: FileChange[], message: string, options?: CommitOptions): Promise<Commit> {
+        const { branch, noOverwrite } = options ?? {};
         const parent = await this.getLatestCommit(branch);
+
+        if (noOverwrite) {
+            changedFiles = await removeExistingFiles(changedFiles, parent.tree);
+        }
+
+        if (changedFiles.length === 0) {
+            throw new NoFilesChangedError();
+        }
 
         const blobs = await Promise.all(changedFiles.map((f) => this.createBlobForFile(f)));
 
@@ -119,8 +140,8 @@ export class Repository {
         return branch;
     }
 
-    async createpullRequest(commit: Commit, targetBranch: string) {
-        const prBranch = await this.getTemporaryBranchName();
+    async createpullRequest(commit: Commit, targetBranch: string, branchHint?: string) {
+        const prBranch = await this.getTemporaryBranchName(branchHint);
         await this.createBranch(prBranch, commit);
 
         const message = await commit.getCommitMessage();
@@ -151,16 +172,16 @@ export class Repository {
         return { path, sha };
     }
 
-    private async getTemporaryBranchName() {
+    private async getTemporaryBranchName(branchHint = 'update') {
         const branches = await this.octokit.paginate(this.octokit.repos.listBranches, this.params);
         const branchNames = branches.map((b) => b.name);
 
-        let name: string;
-        let index = 0;
-        do {
+        let name = `zmk-config-builder/${branchHint}`;
+        let index = 1;
+        while (branchNames.includes(name)) {
+            name = `zmk-config-builder/${branchHint}-${index}`;
             index++;
-            name = `zmk-config-builder/update-${index}`;
-        } while (branchNames.includes(name));
+        }
 
         return name;
     }
@@ -316,4 +337,26 @@ export async function getRepoExists(octokit: Octokit, owner: string, repo: strin
     } catch {
         return false;
     }
+}
+
+export function dedupeFiles(files: FileChange[]): FileChange[] {
+    const map = new Map<string, FileChange>();
+
+    for (const file of files) {
+        map.set(file.path, file);
+    }
+
+    return [...map.values()];
+}
+
+export async function removeExistingFiles(files: FileChange[], tree: GitTree): Promise<FileChange[]> {
+    const filtered: FileChange[] = [];
+
+    for (const file of files) {
+        if ((await tree.getFile(file.path)) === undefined) {
+            filtered.push(file);
+        }
+    }
+
+    return filtered;
 }

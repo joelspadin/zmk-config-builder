@@ -4,9 +4,9 @@ import { useSnackbar } from 'notistack';
 import PropTypes from 'prop-types';
 import React, { useReducer, useState } from 'react';
 import { useAsyncFn } from 'react-use';
-import type { Repository } from '../../../repository';
+import { NoFilesChangedError, Repository } from '../../../repository';
 import type { Build } from '../../../targets';
-import { showModalError } from '../../../util';
+import { showMessage, showModalError } from '../../../util';
 import { getNewKeymapFiles } from '../../../zmk';
 import KeyboardList from '../KeyboardList';
 import { EMPTY_KEYBOARDS, filterKeyboards, KeyboardListDispatch, keyboardListReducer } from '../KeyboardListReducer';
@@ -32,8 +32,14 @@ const AddKeymapForm: React.FunctionComponent<AddKeymapFormProps> = ({ repo, bran
             return url;
         } catch (error) {
             setState(ModifyState.None);
-            showModalError(enqueueSnackbar, error);
-            console.error(error);
+
+            if (error instanceof NoFilesChangedError) {
+                showMessage(enqueueSnackbar, 'You already have keymaps for all the selected keyboards. Nothing to do.');
+            } else {
+                showModalError(enqueueSnackbar, error);
+                console.error(error);
+            }
+
             return undefined;
         }
     }, [repo, branch, keyboards]);
@@ -87,8 +93,8 @@ async function addKeymaps(repo: Repository, branch: string, keyboards: Partial<B
     const message = `Add keyboards\n\n${list}`;
 
     const files = await getNewKeymapFiles(repo.octokit, builds);
-    const commit = await repo.createCommit(files, message, branch);
-    const pull = await repo.createpullRequest(commit, branch);
+    const commit = await repo.createCommit(files, message, { branch, noOverwrite: true });
+    const pull = await repo.createpullRequest(commit, branch, 'add-keymaps');
 
     return pull.data.html_url;
 }
