@@ -118,7 +118,7 @@ const ModifyRepoPage: React.FunctionComponent<ModifyRepoProps> = (props) => {
                         <FormControlLabel
                             value={Action.AddKeymap}
                             control={<Radio />}
-                            label="Add a keymap for a keyboard ZMK already supports"
+                            label="Add keymaps for keyboards ZMK already supports"
                         />
                         <FormControlLabel
                             value={Action.NewKeyboard}
