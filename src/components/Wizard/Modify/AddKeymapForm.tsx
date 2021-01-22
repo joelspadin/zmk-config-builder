@@ -11,6 +11,7 @@ import { getNewKeymapFiles } from '../../../zmk';
 import KeyboardList from '../KeyboardList';
 import { EMPTY_KEYBOARDS, filterKeyboards, KeyboardListDispatch, keyboardListReducer } from '../KeyboardListReducer';
 import ModifyDialog, { ModifyState } from './ModifyDialog';
+import { useRefreshPullRequests } from './PullRequestList';
 
 interface AddKeymapFormProps {
     repo: Repository;
@@ -18,6 +19,7 @@ interface AddKeymapFormProps {
 }
 
 const AddKeymapForm: React.FunctionComponent<AddKeymapFormProps> = ({ repo, branch }) => {
+    const refreshPullRequests = useRefreshPullRequests();
     const { enqueueSnackbar } = useSnackbar();
     const [state, setState] = useState(ModifyState.None);
     const [keyboards, dispatch] = useReducer(keyboardListReducer, EMPTY_KEYBOARDS);
@@ -28,6 +30,8 @@ const AddKeymapForm: React.FunctionComponent<AddKeymapFormProps> = ({ repo, bran
             setState(ModifyState.Working);
             const url = await addKeymaps(repo, branch, keyboards);
             setState(ModifyState.Done);
+
+            refreshPullRequests();
 
             return url;
         } catch (error) {
@@ -42,7 +46,7 @@ const AddKeymapForm: React.FunctionComponent<AddKeymapFormProps> = ({ repo, bran
 
             return undefined;
         }
-    }, [repo, branch, keyboards]);
+    }, [repo, branch, keyboards, refreshPullRequests]);
 
     function handleAddKeymaps() {
         startAddKeymaps();
@@ -86,11 +90,19 @@ AddKeymapForm.propTypes = {
 
 export default AddKeymapForm;
 
+const MAX_SINGLE_LINE_KEYBOARDS = 3;
+
 async function addKeymaps(repo: Repository, branch: string, keyboards: Partial<Build>[]) {
     const builds = filterKeyboards(keyboards);
 
-    const list = builds.map((b) => `- ${b.keyboard.name}`).join('\n');
-    const message = `Add keyboards\n\n${list}`;
+    let message: string;
+
+    if (builds.length <= MAX_SINGLE_LINE_KEYBOARDS) {
+        message = `Add ${builds.map((b) => b.keyboard.name).join(', ')}`;
+    } else {
+        const list = builds.map((b) => `- ${b.keyboard.name}`).join('\n');
+        message = `Add keyboards\n\n${list}`;
+    }
 
     const files = await getNewKeymapFiles(repo.octokit, builds);
     const commit = await repo.createCommit(files, message, { branch, noOverwrite: true });

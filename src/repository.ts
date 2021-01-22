@@ -141,9 +141,7 @@ export class Repository {
     }
 
     async createpullRequest(commit: Commit, targetBranch: string, branchHint?: string) {
-        const prBranch = await this.getTemporaryBranchName(branchHint);
-        await this.createBranch(prBranch, commit);
-
+        const prBranch = await this.createTemporaryBranch(commit, branchHint);
         const message = await commit.getCommitMessage();
 
         return await this.octokit.pulls.create({
@@ -172,18 +170,40 @@ export class Repository {
         return { path, sha };
     }
 
-    private async getTemporaryBranchName(branchHint = 'update') {
+    private async createTemporaryBranch(commit: Commit, branchHint = 'update') {
         const branches = await this.octokit.paginate(this.octokit.repos.listBranches, this.params);
         const branchNames = branches.map((b) => b.name);
 
         let name = `zmk-config-builder/${branchHint}`;
         let index = 1;
-        while (branchNames.includes(name)) {
+
+        function incrementName() {
             name = `zmk-config-builder/${branchHint}-${index}`;
             index++;
         }
 
-        return name;
+        while (branchNames.includes(name)) {
+            incrementName();
+        }
+
+        let maxRetries = 5;
+        while (true) {
+            try {
+                await this.createBranch(name, commit);
+                return name;
+            } catch (error) {
+                // The branch list may be out of date, so if creating one branch
+                // fails, try a few more names.
+                maxRetries--;
+
+                if (maxRetries === 0) {
+                    console.error(`Failed to create branch ${name}`);
+                    throw error;
+                }
+
+                incrementName();
+            }
+        }
     }
 }
 

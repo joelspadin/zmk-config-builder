@@ -18,6 +18,7 @@ import {
     keyboardListReducer,
 } from '../KeyboardListReducer';
 import ModifyDialog, { ModifyState } from './ModifyDialog';
+import { useRefreshPullRequests } from './PullRequestList';
 
 interface InitializeRepoFormProps {
     repo: Repository;
@@ -25,6 +26,7 @@ interface InitializeRepoFormProps {
 }
 
 const InitializeRepoForm: React.FunctionComponent<InitializeRepoFormProps> = ({ repo, branch }) => {
+    const refreshPullRequests = useRefreshPullRequests();
     const { enqueueSnackbar } = useSnackbar();
     const [state, setState] = useState(ModifyState.None);
     const [keyboards, dispatch] = useReducer(keyboardListReducer, EMPTY_KEYBOARDS);
@@ -36,6 +38,8 @@ const InitializeRepoForm: React.FunctionComponent<InitializeRepoFormProps> = ({ 
             const url = await initRepo(repo, branch, keyboards);
             setState(ModifyState.Done);
 
+            refreshPullRequests();
+
             return url;
         } catch (error) {
             setState(ModifyState.None);
@@ -43,7 +47,7 @@ const InitializeRepoForm: React.FunctionComponent<InitializeRepoFormProps> = ({ 
             console.error(error);
             return undefined;
         }
-    }, [repo, branch, keyboards]);
+    }, [repo, branch, keyboards, refreshPullRequests]);
 
     function handleInitRepo() {
         startInitRepo();
