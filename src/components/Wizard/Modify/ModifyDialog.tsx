@@ -38,12 +38,19 @@ const ModifyDialog: React.FunctionComponent<ModifyDialogProps> = ({ state, pullR
 
             case ModifyState.Done:
                 return (
-                    <Typography variant="body1">
-                        A pull request was created. To see and confirm the changes, please open{' '}
-                        <Link target="_blank" href={pullRequestUrl}>
-                            {pullRequestUrl}
-                        </Link>{' '}
-                    </Typography>
+                    <>
+                        <Typography variant="body1" paragraph>
+                            A pull request was created. To see and confirm the changes, please open{' '}
+                            <Link target="_blank" href={pullRequestUrl}>
+                                {pullRequestUrl}
+                            </Link>
+                            .
+                        </Typography>
+                        <Typography variant="body1" paragraph>
+                            To apply the changes, select &quot;Merge pull request&quot;. To cancel them, select
+                            &quot;Close pull request&quot;.
+                        </Typography>
+                    </>
                 );
         }
     }
