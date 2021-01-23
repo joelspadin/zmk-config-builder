@@ -3,6 +3,8 @@ import type { Repository, GitTree, GitFile } from './repository';
 
 export interface BuildTarget {
     type: 'board' | 'shield';
+    /** Repo where this target is defined. */
+    repo: RepoAndBranch;
     /** Name to display to the UI */
     name: string;
     /**
@@ -39,15 +41,16 @@ export async function discoverBuildTargets(repos: RepoAndBranch | RepoAndBranch[
 
     repos = Array.isArray(repos) ? repos : [repos];
 
-    for (const { repo, branch } of repos) {
+    for (const repoAndBranch of repos) {
+        const { repo, branch } = repoAndBranch;
         const commit = await repo.getLatestCommit(branch);
         const tree = commit.tree;
 
         targets.push(
-            ...(await searchSubdirectoriesOf(tree, 'app/boards/arm', findBoards)),
-            ...(await searchSubdirectoriesOf(tree, 'app/boards/shields', findShields)),
-            ...(await searchSubdirectoriesOf(tree, 'config/boards/arm', findBoards)),
-            ...(await searchSubdirectoriesOf(tree, 'config/boards/shields', findShields))
+            ...(await searchSubdirectoriesOf(repoAndBranch, tree, 'app/boards/arm', findBoards)),
+            ...(await searchSubdirectoriesOf(repoAndBranch, tree, 'app/boards/shields', findShields)),
+            ...(await searchSubdirectoriesOf(repoAndBranch, tree, 'config/boards/arm', findBoards)),
+            ...(await searchSubdirectoriesOf(repoAndBranch, tree, 'config/boards/shields', findShields))
         );
     }
 
@@ -69,9 +72,10 @@ export function partitionBuildTargets(targets: BuildTarget[]): PartitionedTarget
 }
 
 async function searchSubdirectoriesOf(
+    repo: RepoAndBranch,
     tree: GitTree,
     path: string,
-    searchFunc: (tree: GitTree) => Promise<BuildTarget[]>
+    searchFunc: (repo: RepoAndBranch, tree: GitTree) => Promise<BuildTarget[]>
 ) {
     const root = await tree.getDirectory(path);
     if (!root) {
@@ -81,28 +85,28 @@ async function searchSubdirectoriesOf(
     const targets: BuildTarget[] = [];
 
     for (const dir of await root.getDirectories()) {
-        targets.push(...(await searchFunc(dir)));
+        targets.push(...(await searchFunc(repo, dir)));
     }
 
     return targets;
 }
 
-function findBoards(tree: GitTree): Promise<BuildTarget[]> {
-    return findBuildTargets(tree, '.dts', 'board');
+function findBoards(repo: RepoAndBranch, tree: GitTree): Promise<BuildTarget[]> {
+    return findBuildTargets(repo, tree, '.dts', 'board');
 }
 
-function findShields(tree: GitTree): Promise<BuildTarget[]> {
-    return findBuildTargets(tree, '.overlay', 'shield');
+function findShields(repo: RepoAndBranch, tree: GitTree): Promise<BuildTarget[]> {
+    return findBuildTargets(repo, tree, '.overlay', 'shield');
 }
 
-async function findBuildTargets(tree: GitTree, searchExt: string, type: 'board' | 'shield') {
+async function findBuildTargets(repo: RepoAndBranch, tree: GitTree, searchExt: string, type: 'board' | 'shield') {
     const targets: BuildTarget[] = [];
 
     for (const file of await tree.getFiles()) {
         const [name, ext] = splitExt(file.name);
 
         if (ext.toLowerCase() === searchExt) {
-            const target = await getBuildInfo(tree, name, type);
+            const target = await getBuildInfo(repo, tree, name, type);
             if (target) {
                 targets.push(target);
             }
@@ -112,7 +116,12 @@ async function findBuildTargets(tree: GitTree, searchExt: string, type: 'board' 
     return targets;
 }
 
-async function getBuildInfo(tree: GitTree, name: string, type: 'board' | 'shield'): Promise<BuildTarget | undefined> {
+async function getBuildInfo(
+    repo: RepoAndBranch,
+    tree: GitTree,
+    name: string,
+    type: 'board' | 'shield'
+): Promise<BuildTarget | undefined> {
     const buildTargets: string[] = [name];
 
     if (isSplitRight(name)) {
@@ -129,7 +138,7 @@ async function getBuildInfo(tree: GitTree, name: string, type: 'board' | 'shield
     const confPath =
         (await findFileFullPath(tree, `${name}.conf`)) ?? (await findFileFullPath(tree, `${name}_defconfig`));
 
-    return { type, name, buildTargets, keymapPath, confPath };
+    return { type, repo, name, buildTargets, keymapPath, confPath };
 }
 
 async function findFileFullPath(tree: GitTree, name: string): Promise<string | undefined> {

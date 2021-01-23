@@ -6,6 +6,7 @@ import {
     ListItemIcon,
     ListItemSecondaryAction,
     ListItemText,
+    ListSubheader,
     makeStyles,
     MenuItem,
     TextField,
@@ -30,9 +31,14 @@ const useStyles = makeStyles((theme) =>
     })
 );
 
+export interface BuildTargetGroup {
+    name: string;
+    targets: BuildTarget[];
+}
+
 export interface KeyboardItemProps {
-    keyboardOptions: BuildTarget[];
-    controllerOptions: BuildTarget[];
+    keyboardOptions: BuildTargetGroup[];
+    controllerOptions: BuildTargetGroup[];
     index: number;
     keyboard?: BuildTarget;
     controller?: BuildTarget;
@@ -116,7 +122,18 @@ KeyboardItem.propTypes = {
 
 export default KeyboardItem;
 
-function getMenuItems(options: BuildTarget[]) {
+function getMenuItems(groups: BuildTargetGroup[]) {
+    if (groups.length === 1) {
+        return getGroupItems(groups[0].targets);
+    }
+
+    return groups.map((group) => [
+        <ListSubheader key={group.name}>{group.name}</ListSubheader>,
+        ...getGroupItems(group.targets),
+    ]);
+}
+
+function getGroupItems(options: BuildTarget[]) {
     return options.map((option) => (
         <MenuItem key={option.name} value={option.name}>
             {option.name}
@@ -124,6 +141,13 @@ function getMenuItems(options: BuildTarget[]) {
     ));
 }
 
-function findTarget(options: BuildTarget[], name: string) {
-    return options.find((item) => item.name === name);
+function findTarget(groups: BuildTargetGroup[], name: string) {
+    for (const group of groups) {
+        const result = group.targets.find((item) => item.name === name);
+        if (result) {
+            return result;
+        }
+    }
+
+    return undefined;
 }

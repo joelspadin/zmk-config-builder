@@ -54,3 +54,26 @@ export function basename(path: string) {
 
     return path.substr(index + 1);
 }
+
+export function groupBy<K, V>(items: V[], keyFunc: (item: V) => K): Map<K, V[]> {
+    const map = new Map<K, V[]>();
+
+    for (const item of items) {
+        const key = keyFunc(item);
+        const group = map.get(key);
+        if (group) {
+            group.push(item);
+        } else {
+            map.set(key, [item]);
+        }
+    }
+
+    return map;
+}
+
+export function flatten<T>(array: T[][]): T[] {
+    return array.reduce((prev, current) => {
+        prev.push(...current);
+        return prev;
+    }, []);
+}

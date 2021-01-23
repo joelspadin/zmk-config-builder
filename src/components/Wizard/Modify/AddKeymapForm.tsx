@@ -4,10 +4,9 @@ import { useSnackbar } from 'notistack';
 import PropTypes from 'prop-types';
 import React, { useReducer, useState } from 'react';
 import { useAsyncFn } from 'react-use';
+import { addKeymaps } from '../../../modifications';
 import { NoFilesChangedError, Repository } from '../../../repository';
-import type { Build } from '../../../targets';
 import { showMessage, showModalError } from '../../../util';
-import { getNewKeymapFiles } from '../../../zmk';
 import KeyboardList from '../KeyboardList';
 import { EMPTY_KEYBOARDS, filterKeyboards, KeyboardListDispatch, keyboardListReducer } from '../KeyboardListReducer';
 import ModifyDialog, { ModifyState } from './ModifyDialog';
@@ -28,7 +27,7 @@ const AddKeymapForm: React.FunctionComponent<AddKeymapFormProps> = ({ repo, bran
     const [result, startAddKeymaps] = useAsyncFn(async () => {
         try {
             setState(ModifyState.Working);
-            const url = await addKeymaps(repo, branch, keyboards);
+            const url = await addKeymaps(repo, branch, filterKeyboards(keyboards));
             setState(ModifyState.Done);
 
             refreshPullRequests();
@@ -89,24 +88,3 @@ AddKeymapForm.propTypes = {
 };
 
 export default AddKeymapForm;
-
-const MAX_SINGLE_LINE_KEYBOARDS = 3;
-
-async function addKeymaps(repo: Repository, branch: string, keyboards: Partial<Build>[]) {
-    const builds = filterKeyboards(keyboards);
-
-    let message: string;
-
-    if (builds.length <= MAX_SINGLE_LINE_KEYBOARDS) {
-        message = `Add ${builds.map((b) => b.keyboard.name).join(', ')}`;
-    } else {
-        const list = builds.map((b) => `- ${b.keyboard.name}`).join('\n');
-        message = `Add keyboards\n\n${list}`;
-    }
-
-    const files = await getNewKeymapFiles(repo.octokit, builds);
-    const commit = await repo.createCommit(files, message, { branch, noOverwrite: true });
-    const pull = await repo.createpullRequest(commit, branch, 'add-keymaps');
-
-    return pull.data.html_url;
-}

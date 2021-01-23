@@ -19,7 +19,7 @@ import { useSnackbar } from 'notistack';
 import PropTypes from 'prop-types';
 import React, { useContext, useReducer, useState } from 'react';
 import { useAsync, useAsyncFn } from 'react-use';
-import { createUserRepository } from '../../../createRepository';
+import { createUserRepository } from '../../../modifications';
 import { getRepoExists } from '../../../repository';
 import type { Build } from '../../../targets';
 import { showModalError } from '../../../util';

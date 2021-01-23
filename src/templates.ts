@@ -6,7 +6,7 @@ const TEMPLATE_DIR = '/templates/';
 export const WORKFLOW_FILE = '.github/workflows/build.yml';
 export const WEST_FILE = 'config/west.yml';
 
-const MATRIX_NODE = ['jobs', 'build', 'strategy', 'matrix', 'include'];
+export const MATRIX_NODE = ['jobs', 'build', 'strategy', 'matrix', 'include'];
 
 async function fetchFile(path: string): Promise<string> {
     const response = await fetch(path);

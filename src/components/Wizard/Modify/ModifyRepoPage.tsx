@@ -24,6 +24,7 @@ import { ConfigWizardDispatch, WizardStep } from '../ConfigWizardReducer';
 import RepoLink from '../RepoLink';
 import { useRepo } from '../RepoProvider';
 import AddKeymapsForm from './AddKeymapForm';
+import GitHubWorkflowForm from './GitHubWorkflowForm';
 import InitializeRepoForm from './InitializeRepoForm';
 import { PullRequestList, PullRequestListProvider } from './PullRequestList';
 
@@ -135,14 +136,14 @@ const ModifyRepoPage: React.FunctionComponent<ModifyRepoProps> = (props) => {
                                     label="Add keymaps for keyboards ZMK already supports"
                                 />
                                 <FormControlLabel
-                                    value={Action.NewKeyboard}
-                                    control={<Radio />}
-                                    label="Add support for a new keyboard to ZMK "
-                                />
-                                <FormControlLabel
                                     value={Action.ChangeWorkflow}
                                     control={<Radio />}
                                     label="Change which firmware GitHub automatically builds"
+                                />
+                                <FormControlLabel
+                                    value={Action.NewKeyboard}
+                                    control={<Radio />}
+                                    label="Add support for a new keyboard to ZMK "
                                 />
                             </RadioGroup>
                         </FormControl>
@@ -156,7 +157,7 @@ const ModifyRepoPage: React.FunctionComponent<ModifyRepoProps> = (props) => {
                             <UnderConstruction />
                         </TabPanel>
                         <TabPanel value={Action.ChangeWorkflow}>
-                            <UnderConstruction />
+                            <GitHubWorkflowForm repo={repo} branch={branch} />
                         </TabPanel>
                     </TabContext>
                 </Grid>

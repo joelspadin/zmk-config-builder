@@ -10,25 +10,30 @@ import {
 } from '@material-ui/core';
 import { Add } from '@material-ui/icons';
 import { Alert, AlertTitle } from '@material-ui/lab';
-import type { Octokit } from '@octokit/rest';
 import PropTypes from 'prop-types';
 import React, { useContext } from 'react';
 import { useAsyncRetry } from 'react-use';
-import { ZMK_MAIN_BRANCH } from '../../config';
-import { Build, discoverBuildTargets, partitionBuildTargets } from '../../targets';
-import { getZmkRepo } from '../../zmk';
+import { getKeyboards, groupKeyboardsByRepo } from '../../keyboards';
+import type { Build, RepoAndBranch } from '../../targets';
 import { useOctokit } from '../OctokitProvider';
 import KeyboardItem from './KeyboardItem';
 import { KeyboardListDispatch } from './KeyboardListReducer';
 
 export interface KeyboardListProps {
     keyboards: Partial<Build>[];
+    userRepos?: RepoAndBranch[];
     noController?: boolean;
 }
 
-const KeyboardList: React.FunctionComponent<KeyboardListProps> = ({ keyboards, noController }) => {
+const KeyboardList: React.FunctionComponent<KeyboardListProps> = ({ keyboards, userRepos, noController }) => {
     const octokit = useOctokit();
-    const result = useAsyncRetry(() => getKeyboards(octokit), [octokit]);
+    const result = useAsyncRetry(async () => {
+        const { keyboards, controllers } = await getKeyboards(octokit, userRepos);
+        return {
+            keyboards: groupKeyboardsByRepo(keyboards),
+            controllers: groupKeyboardsByRepo(controllers),
+        };
+    }, [octokit, userRepos]);
 
     if (result.loading) {
         return (
@@ -77,6 +82,7 @@ const KeyboardList: React.FunctionComponent<KeyboardListProps> = ({ keyboards, n
 
 KeyboardList.propTypes = {
     keyboards: PropTypes.array.isRequired,
+    userRepos: PropTypes.array,
     noController: PropTypes.bool,
 };
 
@@ -102,9 +108,3 @@ const AddKeyboardItem: React.FunctionComponent<AddKeyboardItemProps> = () => {
         </ListItem>
     );
 };
-
-async function getKeyboards(octokit: Octokit) {
-    const repo = getZmkRepo(octokit);
-    const targets = await discoverBuildTargets({ repo, branch: ZMK_MAIN_BRANCH });
-    return partitionBuildTargets(targets);
-}

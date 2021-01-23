@@ -5,7 +5,7 @@ import { useSnackbar } from 'notistack';
 import PropTypes from 'prop-types';
 import React, { useReducer, useState } from 'react';
 import { useAsyncFn } from 'react-use';
-import { initUserRepository } from '../../../createRepository';
+import { initUserRepository } from '../../../modifications';
 import type { Repository } from '../../../repository';
 import type { Build } from '../../../targets';
 import { showModalError } from '../../../util';
@@ -20,7 +20,7 @@ import {
 import ModifyDialog, { ModifyState } from './ModifyDialog';
 import { useRefreshPullRequests } from './PullRequestList';
 
-interface InitializeRepoFormProps {
+export interface InitializeRepoFormProps {
     repo: Repository;
     branch: string;
 }

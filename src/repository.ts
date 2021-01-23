@@ -242,7 +242,7 @@ export class GitTree {
     private files?: GitFile[];
 
     constructor(
-        private repo: Repository,
+        public readonly repo: Repository,
         public readonly name: string,
         public readonly sha: string,
         public readonly parent?: GitTree

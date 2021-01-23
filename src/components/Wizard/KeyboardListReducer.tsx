@@ -26,9 +26,20 @@ interface ClearAction {
     type: 'clear';
 }
 
+interface ResetAction {
+    type: 'reset';
+    builds: Partial<Build>[];
+}
+
 export const EMPTY_KEYBOARDS = [{ keyboard: undefined, controller: undefined }];
 
-export type KeyboardListAction = AddAction | RemoveAction | SetKeyboardAction | SetControllerAction | ClearAction;
+export type KeyboardListAction =
+    | AddAction
+    | RemoveAction
+    | SetKeyboardAction
+    | SetControllerAction
+    | ClearAction
+    | ResetAction;
 
 export const KeyboardListDispatch = createContext<Dispatch<KeyboardListAction>>(() => {});
 
@@ -59,6 +70,9 @@ export const keyboardListReducer: React.Reducer<Partial<Build>[], KeyboardListAc
 
         case 'clear':
             return EMPTY_KEYBOARDS;
+
+        case 'reset':
+            return [...action.builds];
     }
 };
 
