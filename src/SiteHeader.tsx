@@ -20,6 +20,7 @@ import React, { HTMLAttributes, useCallback, useContext, useRef, useState } from
 import { Link, useHistory } from 'react-router-dom';
 import { useAuth } from './AuthProvider';
 import { ExtLink } from './ExtLink';
+import logoUrl from './logo.svg';
 import { mediaQuery } from './styles';
 import { DarkModeContext } from './ThemeProvider';
 
@@ -146,7 +147,7 @@ export const SiteHeader: React.FunctionComponent<HTMLAttributes<HTMLElement>> = 
             <Stack horizontal wrap verticalAlign="center" tokens={stackTokens}>
                 <Stack.Item>
                     <Link to="/" className={classNames.brand}>
-                        <img src="/src/logo.svg" alt="ZMK logo" className={classNames.icon} />
+                        <img src={logoUrl} alt="ZMK logo" className={classNames.icon} />
                         <Text variant="large" className={classNames.title}>
                             ZMK Config Builder
                         </Text>
