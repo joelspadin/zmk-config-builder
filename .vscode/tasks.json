@@ -3,9 +3,8 @@
   "tasks": [
     {
       "type": "npm",
-      "script": "start",
-      "label": "npm: start",
-      "detail": "snowpack dev",
+      "script": "dev",
+      "label": "npm: dev",
       "group": {
         "kind": "build",
         "isDefault": true
