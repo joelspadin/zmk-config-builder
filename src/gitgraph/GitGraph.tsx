@@ -60,9 +60,9 @@ export const GitGraph: React.FunctionComponent<IGitGraphProps> = ({ commits, gra
                 borderWidth: 1,
                 borderStyle: 'solid',
                 borderRadius: theme.effects.roundedCorner4,
-                lineHeight: 'initial',
-                paddingLeft: 4,
-                paddingRight: 4,
+                lineHeight: graphConfig.grid.y - 8,
+                paddingLeft: 5,
+                paddingRight: 5,
                 marginInlineEnd: 8,
             };
 

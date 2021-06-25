@@ -16,7 +16,7 @@ const mockCommits: Commit[] = [
         message: 'Four',
         parents: ['4'],
         branches: ['main'],
-        tags: ['v1.0'],
+        tags: ['also-v1.0'],
     },
     {
         hash: 'd',
