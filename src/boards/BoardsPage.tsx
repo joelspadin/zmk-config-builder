@@ -20,6 +20,7 @@ export const BoardsPage: React.FunctionComponent = () => {
 
                 <Section>
                     <SectionHeader>Keymaps and configuration</SectionHeader>
+                    <p>This shows the keymaps and keyboard configuration files in your repo. Click one to edit it.</p>
                     <KeymapsForm />
                 </Section>
 

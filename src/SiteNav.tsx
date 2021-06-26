@@ -49,6 +49,12 @@ const navGroups: INavLinkGroup[] = [
                 icon: 'Build',
             },
             {
+                name: 'Files',
+                key: '/files',
+                url: '/files',
+                icon: 'FolderHorizontal',
+            },
+            {
                 name: 'Commit',
                 key: '/commit',
                 url: '/commit',

@@ -3,7 +3,6 @@ import React from 'react';
 import { useHistory, useParams } from 'react-router-dom';
 import { PageTitle } from '../PageTitle';
 import { ChangesPage } from './ChangesPage';
-import { FilesPage } from './FilesPage';
 import { GitGraphPage } from './GitGraphPage';
 
 const pivotStyles: Partial<IPivotStyles> = {
@@ -19,7 +18,6 @@ interface ICommitPageParams {
 enum Tabs {
     Changes = 'changes',
     GitGraph = 'graph',
-    Files = 'files',
 }
 
 export const CommitPage: React.FunctionComponent = () => {
@@ -43,9 +41,6 @@ export const CommitPage: React.FunctionComponent = () => {
                 </PivotItem>
                 <PivotItem headerText="Graph" itemIcon="GitGraph" itemKey={Tabs.GitGraph}>
                     <GitGraphPage />
-                </PivotItem>
-                <PivotItem headerText="Files" itemIcon="Code" itemKey={Tabs.Files}>
-                    <FilesPage />
                 </PivotItem>
             </Pivot>
         </Stack>

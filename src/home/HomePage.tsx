@@ -1,10 +1,10 @@
 import { Link, mergeStyleSets, Stack } from '@fluentui/react';
 import React from 'react';
+import { Alert } from '../Alert';
 import { useAuth } from '../AuthProvider';
 import { ExtLink } from '../ExtLink';
 import { LoginSection } from '../login/LoginSection';
 import { PrivacyNotice } from '../login/PrivacyNotice';
-import { Notice } from '../Notice';
 import { PageTitle } from '../PageTitle';
 import { Section } from '../Section';
 
@@ -24,7 +24,7 @@ export const HomePage: React.FunctionComponent = () => {
             <PageTitle>ZMK Config Builder</PageTitle>
             <Section>
                 <p>
-                    This application helps you create and edit a personal GitHub repository for{' '}
+                    This application helps you create and edit a personal Git repository for{' '}
                     <ExtLink href="https://zmk.dev">ZMK Firmware</ExtLink>.
                 </p>
                 <p>
@@ -59,6 +59,12 @@ export const HomePage: React.FunctionComponent = () => {
                         choose which firmware GitHub will build.
                     </li>
                     <li>
+                        <Link href="/files">
+                            <strong>Files:</strong>
+                        </Link>{' '}
+                        view and manually edit the files in the repo.
+                    </li>
+                    <li>
                         <Link href="/commit">
                             <strong>Commit:</strong>
                         </Link>{' '}
@@ -66,11 +72,11 @@ export const HomePage: React.FunctionComponent = () => {
                     </li>
                 </ul>
 
-                <Notice>
+                <Alert>
                     This app makes changes to a local copy of the repo which is stored in your browser.{' '}
                     <strong>Your changes will not show up immediately on GitHub.</strong> Once you have made the changes
                     you want, use the <Link href="/commit">commit page</Link> to save them and push them to GitHub.
-                </Notice>
+                </Alert>
             </Section>
 
             {!auth.isAuthenticated && <LoginSection />}

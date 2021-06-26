@@ -6,6 +6,7 @@ const getClassNames = memoizeFunction(() => {
 
     return mergeStyleSets({
         link: {
+            display: 'inline-block',
             '::after': {
                 fontFamily: icon?.subset.fontFace?.fontFamily,
                 content: `"${icon?.code}"`,

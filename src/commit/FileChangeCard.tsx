@@ -3,6 +3,7 @@ import { useBoolean, useId } from '@fluentui/react-hooks';
 import { DiffEditor, DiffOnMount } from '@monaco-editor/react';
 import * as monaco from 'monaco-editor/esm/vs/editor/editor.api';
 import React, { useCallback, useMemo, useState } from 'react';
+import { useMedia } from 'react-use';
 import { mediaQuery } from '../styles';
 
 interface IFileChangeCardStyles {
@@ -27,17 +28,22 @@ export interface IFileChangeCardProps {
     defaultExpanded?: boolean;
 }
 
-const options: monaco.editor.IDiffEditorConstructionOptions = {
-    automaticLayout: true,
+const baseOptions: monaco.editor.IDiffEditorConstructionOptions = {
     readOnly: true,
     scrollBeyondLastLine: false,
+    scrollbar: {
+        alwaysConsumeMouseWheel: false,
+    },
 };
+
+const maxEditorHeight = 800;
 
 export const FileChangeCard: React.FunctionComponent<IFileChangeCardProps> = ({
     original,
     modified,
     defaultExpanded,
 }) => {
+    const renderSideBySide = useMedia('(min-width: 1084px)');
     const [expanded, { toggle: toggleExpanded }] = useBoolean(defaultExpanded ?? true);
     const [height, setHeight] = useState<number>();
 
@@ -65,7 +71,6 @@ export const FileChangeCard: React.FunctionComponent<IFileChangeCardProps> = ({
                     borderRadius: theme.effects.roundedCorner4,
                 },
                 overflow: 'hidden',
-                maxHeight: '80vh',
             },
             header: {
                 height: 42,
@@ -97,12 +102,20 @@ export const FileChangeCard: React.FunctionComponent<IFileChangeCardProps> = ({
         [theme, expanded],
     );
 
+    const options = useMemo(
+        () => ({
+            ...baseOptions,
+            renderSideBySide,
+        }),
+        [renderSideBySide],
+    );
+
     const handleEditorDidMount: DiffOnMount = useCallback(
         (editor) => {
-            const originalEditor = editor.getOriginalEditor();
-            const modifiedEditor = editor.getModifiedEditor();
+            const originalHeight = editor.getOriginalEditor().getScrollHeight();
+            const modifiedHeight = editor.getModifiedEditor().getScrollHeight();
 
-            setHeight(Math.max(originalEditor.getScrollHeight(), modifiedEditor.getScrollHeight()));
+            setHeight(Math.min(maxEditorHeight, Math.max(originalHeight, modifiedHeight)));
         },
         [setHeight],
     );

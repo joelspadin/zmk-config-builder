@@ -103,6 +103,8 @@ export const GitGraphPage: React.FunctionComponent = () => {
 
     return (
         <Section>
+            <p>This graph shows the commits in your repo.</p>
+            <p>TODO: add a way to switch branches here.</p>
             <GitGraph commits={mockCommits} graphConfig={graphConfig} />
         </Section>
     );

@@ -22,6 +22,11 @@ export const ChangesPage: React.FunctionComponent = () => {
     return (
         <>
             <Section>
+                <p>
+                    Check below for a list of staged changes. Once you&apos;re happy with them, write a short
+                    description of the changes and click &ldquo;Commit and push&rdquo; to save them as a commit and push
+                    the commit to GitHub.
+                </p>
                 <TextField
                     label="Commit message"
                     multiline

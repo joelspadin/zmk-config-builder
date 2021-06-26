@@ -1,4 +1,4 @@
-import { Stack } from '@fluentui/react';
+import { Link, Stack } from '@fluentui/react';
 import React from 'react';
 import { ExtLink } from '../ExtLink';
 import { PageTitle } from '../PageTitle';
@@ -24,7 +24,8 @@ export const BuildsPage: React.FunctionComponent = () => {
                 <Section>
                     <SectionHeader>GitHub build matrix</SectionHeader>
                     <p>
-                        GitHub will build firmware for each item in the matrix. Check your repo&apos;s{' '}
+                        GitHub will build a firmware file for each row in this list. After{' '}
+                        <Link href="/commit">committing your changes</Link>, check your repo&apos;s{' '}
                         <ExtLink href={actionsUrl}>Actions tab</ExtLink> for the results.
                     </p>
                     <BuildMatrix />

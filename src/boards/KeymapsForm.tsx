@@ -12,11 +12,11 @@ import { FileEditCell } from './FileEditCell';
 
 const mockItems: IBoardConfig[] = [
     {
-        keymapPath: 'config/corne.keymap',
-        configPath: 'config/corne.conf',
+        keymapPath: 'corne.keymap',
+        configPath: 'corne.conf',
     },
     {
-        keymapPath: 'config/numble.keymap',
+        keymapPath: 'numble.keymap',
     },
 ];
 

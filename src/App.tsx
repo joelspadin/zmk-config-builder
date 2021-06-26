@@ -70,6 +70,8 @@ const Content: React.FunctionComponent = () => {
         };
     }, theme);
 
+    // TODO: check if repo is behind remote, and if so push a MessageBar to
+    // the top of the screen to pull changes.
     return (
         <div className={classNames.root}>
             <SiteHeader className={classNames.header} />
