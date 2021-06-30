@@ -18,7 +18,6 @@ const AuthRoute: React.FunctionComponent<RouteProps> = ({ component, ...props })
             {...props}
             render={(renderProps) => {
                 if (!auth.isAuthenticated) {
-                    console.log('redirect');
                     const search = (typeof props.path === 'string' && `?from=${encodeURIComponent(props.path)}`) || '';
                     return <Redirect to={{ pathname: '/login', search }} />;
                 }

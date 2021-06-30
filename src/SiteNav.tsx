@@ -69,7 +69,6 @@ export const SiteNav: React.FunctionComponent = () => {
     const location = useLocation();
 
     const key = location.pathname;
-    console.log(key);
 
     // return <Nav linkAs={NavLink} groups={navGroups} />;
     return (
