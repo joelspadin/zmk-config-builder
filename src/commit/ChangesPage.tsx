@@ -2,7 +2,7 @@ import { ITextFieldStyles, mergeStyleSets, PrimaryButton, Stack, Text, TextField
 import React from 'react';
 import { Section } from '../Section';
 import { FileChangeCard } from './FileChangeCard';
-import { addConfigFile, buildMatrixFile, deleteConfigFile, renameConfigFile } from './mockFiles';
+import { buildMatrixFile, deleteConfigFile, devicetreeFile, renameConfigFile } from './mockFiles';
 
 const classNames = mergeStyleSets({
     message: {},
@@ -14,7 +14,7 @@ const classNames = mergeStyleSets({
 const textFieldStyles: Partial<ITextFieldStyles> = {
     field: {
         fontFamily: "source-code-pro, Menlo, Monaco, Consolas, 'Courier New', monospace",
-        height: 80,
+        height: 64,
     },
 };
 
@@ -44,10 +44,10 @@ export const ChangesPage: React.FunctionComponent = () => {
             </Text>
 
             <Stack>
-                <FileChangeCard {...addConfigFile} />
                 <FileChangeCard {...deleteConfigFile} />
                 <FileChangeCard {...renameConfigFile} />
                 <FileChangeCard {...buildMatrixFile} />
+                <FileChangeCard {...devicetreeFile} />
             </Stack>
         </>
     );
