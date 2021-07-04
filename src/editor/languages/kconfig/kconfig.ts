@@ -41,7 +41,6 @@ export const language = <languages.IMonarchLanguage>{
         'range',
         'imply',
         'optional',
-        'help',
         'prompt',
         'mainmenu',
         'menu',
@@ -71,10 +70,12 @@ export const language = <languages.IMonarchLanguage>{
     tokenizer: {
         root: [
             // identifiers and keywords
-            [/depends on/, 'keyword'],
-            [/visible if/, 'keyword'],
+            { include: '@help' },
+
+            [/\bdepends on\b/, 'keyword'],
+            [/\bvisible if\b/, 'keyword'],
             [
-                /[a-z_][a-z_-]*/,
+                /\b[a-z_][a-z_-]*\b/,
                 {
                     cases: {
                         '@typeKeywords': 'type',
@@ -84,7 +85,7 @@ export const language = <languages.IMonarchLanguage>{
                     },
                 },
             ],
-            [/[A-Z_$][\w$]*/, 'type.identifier'],
+            [/\b[A-Z_]+\b/, 'type.identifier'],
 
             // whitespace
             { include: '@whitespace' },
@@ -103,6 +104,25 @@ export const language = <languages.IMonarchLanguage>{
 
             [/'([^'\\]|\\.)*$/, 'string.invalid'], // non-teminated string
             [/'/, { token: 'string.quote', bracket: '@open', next: '@string' }],
+        ],
+
+        help: [[/^\s+help\s*$/, 'keyword', '@helpTextFirstLine']],
+
+        helpTextFirstLine: [
+            [/^(\s+).+$/, 'string', '@helpTextContinued.$1'],
+            [/./, '@rematch', '@popall'],
+        ],
+
+        helpTextContinued: [
+            [
+                /^(\s*).+$/,
+                {
+                    cases: {
+                        '$1==$S2': 'string',
+                        '@default': { token: '@rematch', next: '@popall' },
+                    },
+                },
+            ],
         ],
 
         dblstring: [
