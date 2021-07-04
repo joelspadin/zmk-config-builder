@@ -2,6 +2,7 @@ import { useMonaco } from '@monaco-editor/react';
 import { useEffect } from 'react';
 import './conf/conf.contribution';
 import './devicetree/devicetree.contribution';
+import './kconfig/kconfig.contribution';
 import { loadLanguages } from './register';
 
 export { loadLanguages } from './register';

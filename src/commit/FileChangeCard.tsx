@@ -37,7 +37,7 @@ export interface IFileContents {
 export interface IFileChangeCardProps {
     original?: IFileContents;
     modified?: IFileContents;
-    defaultExpanded?: boolean;
+    defaultCollapsed?: boolean;
 }
 
 const baseOptions: monaco.editor.IDiffEditorConstructionOptions = {
@@ -89,12 +89,12 @@ const getStyles: IStyleFunctionOrObject<Theme, IFileChangeCardStyles> = (theme: 
 export const FileChangeCard: React.FunctionComponent<IFileChangeCardProps> = ({
     original,
     modified,
-    defaultExpanded,
+    defaultCollapsed,
 }) => {
     useMonacoLanguages();
 
     const renderSideBySide = useMedia('(min-width: 1084px)');
-    const [expanded, { toggle: toggleExpanded }] = useBoolean(defaultExpanded ?? true);
+    const [expanded, { toggle: toggleExpanded }] = useBoolean(!defaultCollapsed);
     const [height, setHeight] = useState<number>();
 
     const fileName = modified?.name ?? original?.name;

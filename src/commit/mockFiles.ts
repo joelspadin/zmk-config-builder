@@ -394,3 +394,450 @@ export const devicetreeFile: IFileChangeCardProps = {
         text: newDts,
     },
 };
+
+const newKconfig = `\
+# Copyright (c) 2020 The ZMK Contributors
+# SPDX-License-Identifier: MIT
+
+mainmenu "ZMK Firmware"
+
+menu "ZMK"
+
+menu "Basic Keyboard Setup"
+
+config ZMK_KEYBOARD_NAME
+	string "Keyboard Name"
+
+config USB_DEVICE_PRODUCT
+	default ZMK_KEYBOARD_NAME
+
+config BT_DEVICE_NAME
+	default ZMK_KEYBOARD_NAME
+
+config USB_DEVICE_VID
+	default 0x1D50
+
+config USB_DEVICE_PID
+	default 0x615E
+
+config USB_DEVICE_MANUFACTURER
+	default "ZMK Project"
+
+menu "HID Output Types"
+
+config ZMK_USB
+	bool "USB"
+	select USB
+	select USB_DEVICE_STACK
+	select USB_DEVICE_HID
+
+if ZMK_USB
+
+config USB_NUMOF_EP_WRITE_RETRIES
+	default 10
+
+#ZMK_USB
+endif
+
+menuconfig ZMK_BLE
+	bool "BLE (HID over GATT)"
+	select BT
+	select BT_SMP
+	select BT_SMP_SC_PAIR_ONLY
+	select BT_SMP_APP_PAIRING_ACCEPT
+	select BT_PERIPHERAL
+	select BT_DIS
+	select BT_BAS
+	select BT_SETTINGS
+	select SETTINGS
+
+if ZMK_BLE
+
+config SYSTEM_WORKQUEUE_STACK_SIZE
+	default 2048
+
+config ZMK_BLE_THREAD_STACK_SIZE
+	int "BLE notify thread stack size"
+	default 512
+
+config ZMK_BLE_THREAD_PRIORITY
+	int "BLE notify thread priority"
+	default 5
+
+config ZMK_BLE_KEYBOARD_REPORT_QUEUE_SIZE
+	int "Max number of keyboard HID reports to queue for sending over BLE"
+	default 20
+
+config ZMK_BLE_CONSUMER_REPORT_QUEUE_SIZE
+	int "Max number of consumer HID reports to queue for sending over BLE"
+	default 5
+
+config ZMK_BLE_CLEAR_BONDS_ON_START
+	bool "Configuration that clears all bond information from the keyboard on startup."
+	default n
+
+# HID GATT notifications sent this way are *not* picked up by Linux, and possibly others.
+config BT_GATT_NOTIFY_MULTIPLE
+	default n
+
+config BT_DEVICE_APPEARANCE
+	default 961
+
+config ZMK_BLE_PASSKEY_ENTRY
+	bool "Experimental: Requiring typing passkey from host to pair BLE connection"
+	default n
+
+#ZMK_BLE
+endif
+
+#HID Output Types
+endmenu
+
+menu "Split Support"
+
+config ZMK_SPLIT
+	bool "Split keyboard support"
+
+if ZMK_SPLIT
+
+menuconfig ZMK_SPLIT_BLE
+	bool "Split keyboard support via BLE transport"
+	depends on ZMK_BLE
+	default y
+	select BT_USER_PHY_UPDATE
+
+if ZMK_SPLIT_BLE
+
+menuconfig ZMK_SPLIT_BLE_ROLE_CENTRAL
+	bool "Central"
+	select BT_CENTRAL
+	select BT_GATT_CLIENT
+
+if ZMK_SPLIT_BLE_ROLE_CENTRAL
+
+config ZMK_SPLIT_BLE_CENTRAL_POSITION_QUEUE_SIZE
+	int "Max number of key position state events to queue when received from peripherals"
+	default 5
+
+endif
+
+if !ZMK_SPLIT_BLE_ROLE_CENTRAL
+
+config ZMK_SPLIT_BLE_PERIPHERAL_STACK_SIZE
+	int "BLE split peripheral notify thread stack size"
+	default 512
+
+config ZMK_SPLIT_BLE_PERIPHERAL_PRIORITY
+	int "BLE split peripheral notify thread priority"
+	default 5
+
+config ZMK_SPLIT_BLE_PERIPHERAL_POSITION_QUEUE_SIZE
+	int "Max number of key position state events to queue to send to the central"
+	default 10
+
+config ZMK_USB
+	default n
+
+config BT_MAX_PAIRED
+	default 1
+
+config BT_MAX_CONN
+	default 1
+
+config BT_GAP_AUTO_UPDATE_CONN_PARAMS
+	default n
+
+#!ZMK_SPLIT_BLE_ROLE_CENTRAL
+endif
+
+#ZMK_SPLIT_BLE
+endif
+
+#ZMK_SPLIT
+endif
+
+if ZMK_BLE
+
+if ZMK_SPLIT_BLE && ZMK_SPLIT_BLE_ROLE_CENTRAL
+
+config BT_MAX_CONN
+	default 6
+
+config BT_MAX_PAIRED
+	default 6
+
+#ZMK_SPLIT_BLE && ZMK_SPLIT_BLE_ROLE_CENTRAL
+endif
+
+if !ZMK_SPLIT_BLE
+
+config BT_MAX_CONN
+	default 5
+
+config BT_MAX_PAIRED
+	default 5
+
+#!ZMK_SPLIT_BLE
+endif
+
+#ZMK_BLE
+endif
+
+#Split Support
+endmenu
+
+#Basic Keyboard Setup
+endmenu
+
+menu "Display/LED Options"
+
+rsource "src/display/Kconfig"
+
+config ZMK_RGB_UNDERGLOW
+	bool "RGB Adressable LED Underglow"
+	select LED_STRIP
+
+if ZMK_RGB_UNDERGLOW
+
+# This default value cuts down on tons of excess .conf files, if you're using GPIO, manually disable this
+config SPI
+	default y
+
+config ZMK_RGB_UNDERGLOW_EXT_POWER
+	bool "RGB underglow toggling also controls external power"
+	default y
+
+config ZMK_RGB_UNDERGLOW_HUE_STEP
+	int "RGB underglow hue step in degrees of 360"
+	default 10
+
+config ZMK_RGB_UNDERGLOW_SAT_STEP
+	int "RGB underglow sturation step in percent"
+	default 10
+
+config ZMK_RGB_UNDERGLOW_BRT_STEP
+	int "RGB underglow brightness step in percent"
+	default 10
+
+config ZMK_RGB_UNDERGLOW_HUE_START
+	int "RGB underglow start hue value from 0-359"
+	default 0
+
+config ZMK_RGB_UNDERGLOW_SAT_START
+	int "RGB underglow start saturations value from 0-100"
+	default 100
+
+config ZMK_RGB_UNDERGLOW_BRT_START
+	int "RGB underglow start brightness value from 0-100"
+	default 100
+
+config ZMK_RGB_UNDERGLOW_SPD_START
+	int "RGB underglow start animation speed value from 1-5"
+	default 3
+
+config ZMK_RGB_UNDERGLOW_EFF_START
+	int "RGB underglow start effect int value related to the effect enum list"
+	default 0
+
+config ZMK_RGB_UNDERGLOW_ON_START
+	bool "RGB underglow starts on by default"
+	default y
+
+#ZMK_RGB_UNDERGLOW
+endif
+
+#Display/LED Options
+endmenu
+
+menu "Power Management"
+
+config ZMK_IDLE_TIMEOUT
+	int "Milliseconds of inactivity before entering idle state (OLED shutoff, etc)"
+	default 30000
+
+config ZMK_SLEEP
+	bool "Enable deep sleep support"
+	imply USB
+
+if ZMK_SLEEP
+
+config SYS_POWER_DEEP_SLEEP_STATES
+	default y
+
+choice SYS_PM_POLICY
+	default SYS_PM_POLICY_APP
+endchoice
+
+config DEVICE_POWER_MANAGEMENT
+	default y
+
+config ZMK_IDLE_SLEEP_TIMEOUT
+	int "Milliseconds of inactivity before entering deep sleep"
+	default 900000
+
+#ZMK_SLEEP
+endif
+
+config ZMK_EXT_POWER
+	bool "Enable support to control external power output"
+	default y
+
+#Power Management
+endmenu
+
+menu "Combo options"
+
+config ZMK_COMBO_MAX_PRESSED_COMBOS
+	int "Maximum number of currently pressed combos"
+	default 4
+
+config ZMK_COMBO_MAX_COMBOS_PER_KEY
+	int "Maximum number of combos per key"
+	default 5
+
+config ZMK_COMBO_MAX_KEYS_PER_COMBO
+	int "Maximum number of keys per combo"
+	default 4
+
+#Display/LED Options
+endmenu
+
+menu "Advanced"
+
+menu "Initialization Priorities"
+
+if USB
+
+config ZMK_USB_INIT_PRIORITY
+	int "USB Init Priority"
+	default 50
+
+#USB
+endif
+
+if ZMK_BLE || ZMK_SPLIT_BLE
+
+config ZMK_BLE_INIT_PRIORITY
+	int "BLE Init Priority"
+	default 50
+
+#ZMK_BLE || ZMK_SPLIT_BLE
+endif
+
+#Initialization Priorities
+endmenu
+
+menu "KSCAN Settings"
+
+config ZMK_KSCAN_EVENT_QUEUE_SIZE
+	int "Size of the event queue for KSCAN events to buffer events"
+	default 4
+
+config ZMK_KSCAN_MOCK_DRIVER
+	bool "Enable mock kscan driver to simulate key presses"
+
+config ZMK_KSCAN_COMPOSITE_DRIVER
+	bool "Enable composite kscan driver to combine kscan devices"
+
+#KSCAN Settings
+endmenu
+
+menu "USB Logging"
+
+config ZMK_USB_LOGGING
+	bool "Enable USB CDC ACM logging to help debug"
+	select LOG
+	select USB
+	select USB_DEVICE_STACK
+	select USB_CDC_ACM
+	select SERIAL
+	select CONSOLE
+	select UART_INTERRUPT_DRIVEN
+	select UART_LINE_CTRL
+	select UART_CONSOLE
+	select USB_UART_CONSOLE
+
+if ZMK_USB_LOGGING
+
+config ZMK_LOG_LEVEL
+	default 4
+
+config USB_CDC_ACM_RINGBUF_SIZE
+	default 1024
+
+config USB_CDC_ACM_DEVICE_NAME
+	default "CDC_ACM"
+
+config USB_CDC_ACM_DEVICE_COUNT
+	default 1
+
+config UART_CONSOLE_ON_DEV_NAME
+	default "CDC_ACM_0"
+
+config LOG_BUFFER_SIZE
+	default 8192
+
+config LOG_STRDUP_BUF_COUNT
+	default 16
+
+#ZMK_USB_LOGGING
+endif
+
+#USB Logging
+endmenu
+
+if SETTINGS
+
+config ZMK_SETTINGS_SAVE_DEBOUNCE
+	int "Milliseconds to debounce settings saves"
+	default 60000
+
+#SETTINGS
+endif
+
+#Advanced
+endmenu
+
+#ZMK
+endmenu
+
+config HEAP_MEM_POOL_SIZE
+	default 8192
+
+config KERNEL_BIN_NAME
+	default "zmk"
+
+config REBOOT
+	default y
+
+config USB
+	default y if HAS_HW_NRF_USBD
+
+config ZMK_WPM
+	bool "Calculate WPM"
+	default n
+
+config SENSOR
+	default y
+
+module = ZMK
+module-str = zmk
+source "subsys/logging/Kconfig.template.log_config"
+
+rsource "boards/Kconfig"
+rsource "boards/shields/*/Kconfig.defconfig"
+rsource "boards/shields/*/Kconfig.shield"
+
+osource "$(ZMK_CONFIG)/boards/shields/*/Kconfig.defconfig"
+osource "$(ZMK_CONFIG)/boards/shields/*/Kconfig.shield"
+
+
+source "Kconfig.zephyr"
+`;
+
+export const kconfigFile: IFileChangeCardProps = {
+    modified: {
+        name: 'app/Kconfig',
+        text: newKconfig,
+    },
+};

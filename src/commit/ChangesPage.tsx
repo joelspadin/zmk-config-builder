@@ -2,7 +2,7 @@ import { ITextFieldStyles, mergeStyleSets, PrimaryButton, Stack, Text, TextField
 import React from 'react';
 import { Section } from '../Section';
 import { FileChangeCard } from './FileChangeCard';
-import { buildMatrixFile, deleteConfigFile, devicetreeFile, renameConfigFile } from './mockFiles';
+import { buildMatrixFile, deleteConfigFile, devicetreeFile, kconfigFile, renameConfigFile } from './mockFiles';
 
 const classNames = mergeStyleSets({
     message: {},
@@ -47,7 +47,8 @@ export const ChangesPage: React.FunctionComponent = () => {
                 <FileChangeCard {...deleteConfigFile} />
                 <FileChangeCard {...renameConfigFile} />
                 <FileChangeCard {...buildMatrixFile} />
-                <FileChangeCard {...devicetreeFile} />
+                <FileChangeCard {...devicetreeFile} defaultCollapsed />
+                <FileChangeCard {...kconfigFile} defaultCollapsed />
             </Stack>
         </>
     );
