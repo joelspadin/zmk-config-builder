@@ -121,7 +121,7 @@ export const language = <languages.IMonarchLanguage>{
             { include: '@label' },
 
             // Root node
-            [/\/\s*(?=\{)/, 'identifier'],
+            // [/\/\s*(?=\{)/, 'identifier'],
 
             { include: '@nodebegin' },
 
@@ -162,8 +162,12 @@ export const language = <languages.IMonarchLanguage>{
         identifiers: [
             // Constants
             [/[A-Z_]+\b(?!\()/, 'constant'],
-            // Node labels
-            [/(:)(\s*)([a-zA-Z_]\w+)(\s*)(?=\{)/, ['delimiter', '', 'variable', '']],
+            // Root node
+            [/(\/)(\s*)(?=\{)/, ['type', '']],
+            // Node name
+            [/([a-zA-Z_][\w,-]*)(\s*)(?=[{:])/, ['type', '']],
+            // Node label
+            [/(:)(\s*)(.+)(\s*)(?=\{)/, ['delimiter', '', 'variable.name', '']],
             // Other identifiers
             [
                 /(\/)?[a-zA-Z_][\w,-]*\1/,
@@ -212,9 +216,6 @@ export const language = <languages.IMonarchLanguage>{
             [/#[\w,-]+/, 'identifier'],
 
             { include: '@whitespace' },
-
-            // node address
-            [/@\s*[0-9a-fA-F,]+/, 'annotation'],
 
             { include: '@label' },
 
