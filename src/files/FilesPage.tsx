@@ -9,7 +9,6 @@ export const FilesPage: React.FunctionComponent = () => {
         <Stack>
             <PageTitle>File explorer</PageTitle>
             <Section>
-                <p>Here you will be able to manually edit the files in your repo.</p>
                 <NotImplemented />
             </Section>
         </Stack>

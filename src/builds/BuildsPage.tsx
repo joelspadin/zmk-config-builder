@@ -5,6 +5,7 @@ import { PageTitle } from '../PageTitle';
 import { Section, SectionHeader } from '../Section';
 import { UnsavedChangesPrompt } from '../UnsavedChangesPrompt';
 import { BuildMatrix } from './BuildMatrix';
+import { RecentBuildsList } from './RecentBuildsList';
 
 export const BuildsPage: React.FunctionComponent = () => {
     // TODO
@@ -29,6 +30,11 @@ export const BuildsPage: React.FunctionComponent = () => {
                         <ExtLink href={actionsUrl}>Actions tab</ExtLink> for the results.
                     </p>
                     <BuildMatrix />
+                </Section>
+
+                <Section>
+                    <SectionHeader>Recent builds</SectionHeader>
+                    <RecentBuildsList />
                 </Section>
 
                 {/* <Stack horizontal>
