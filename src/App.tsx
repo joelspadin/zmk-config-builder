@@ -2,7 +2,8 @@ import { classNamesFunction, IStyle, Theme, useTheme } from '@fluentui/react';
 import React from 'react';
 import { BrowserRouter as Router } from 'react-router-dom';
 import './App.css';
-import { AuthProvider } from './AuthProvider';
+import { AuthProvider } from './git/AuthProvider';
+import { GitApiProvider } from './git/GitApiProvider';
 import { Routes } from './routes';
 import { SiteHeader, SiteHeaderHeight } from './SiteHeader';
 import { SiteNav } from './SiteNav';
@@ -91,9 +92,11 @@ export const App: React.FunctionComponent = () => {
     return (
         <ThemeProvider>
             <AuthProvider>
-                <Router>
-                    <Content />
-                </Router>
+                <GitApiProvider>
+                    <Router>
+                        <Content />
+                    </Router>
+                </GitApiProvider>
             </AuthProvider>
         </ThemeProvider>
     );

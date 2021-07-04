@@ -1,23 +1,24 @@
 import React from 'react';
 import { Redirect, Route, RouteProps, Switch } from 'react-router-dom';
-import { useAuth } from './AuthProvider';
 import { BoardsPage } from './boards/BoardsPage';
 import { BuildsPage } from './builds/BuildsPage';
 import { CommitPage } from './commit/CommitPage';
 import { FilesPage } from './files/FilesPage';
+import { useGit } from './git/GitApiProvider';
 import { HomePage } from './home/HomePage';
 import { LoginPage } from './login/LoginPage';
+import { OAuthCallbackPage } from './login/OauthCallbackPage';
 import { RepoPage } from './repo/RepoPage';
 import { SourcesPage } from './sources/SourcesPage';
 
 const AuthRoute: React.FunctionComponent<RouteProps> = ({ component, ...props }) => {
-    const auth = useAuth();
+    const git = useGit();
 
     return (
         <Route
             {...props}
             render={(renderProps) => {
-                if (!auth.isAuthenticated) {
+                if (!git.isAuthenticated) {
                     const search = (typeof props.path === 'string' && `?from=${encodeURIComponent(props.path)}`) || '';
                     return <Redirect to={{ pathname: '/login', search }} />;
                 }
@@ -32,6 +33,7 @@ export const Routes: React.FunctionComponent = () => {
     return (
         <Switch>
             <Route exact path="/" component={HomePage} />
+            <Route path="/login/oauth" component={OAuthCallbackPage} />
             <Route path="/login" component={LoginPage} />
             <AuthRoute path="/boards" component={BoardsPage} />
             <AuthRoute path="/builds" component={BuildsPage} />

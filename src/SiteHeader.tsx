@@ -16,10 +16,11 @@ import {
     Toggle,
     useTheme,
 } from '@fluentui/react';
-import React, { HTMLAttributes, useCallback, useContext, useRef, useState } from 'react';
+import React, { HTMLAttributes, useCallback, useContext, useMemo, useRef, useState } from 'react';
 import { Link, useHistory } from 'react-router-dom';
-import { useAuth } from './AuthProvider';
 import { ExtLink } from './ExtLink';
+import { useAuth } from './git/AuthProvider';
+import { useGit } from './git/GitApiProvider';
 import logoUrl from './logo.svg';
 import { mediaQuery } from './styles';
 import { DarkModeContext } from './ThemeProvider';
@@ -91,11 +92,6 @@ const toggleStyles: Partial<IToggleStyles> = {
     },
 };
 
-const mockPersona: IPersonaSharedProps = {
-    text: 'John Doe',
-    imageInitials: 'JD',
-};
-
 interface IHeaderStyles {
     links: IStyle;
 }
@@ -109,6 +105,7 @@ export const SiteHeader: React.FunctionComponent<HTMLAttributes<HTMLElement>> = 
     const history = useHistory();
     const theme = useTheme();
     const auth = useAuth();
+    const git = useGit();
 
     const onShowUserMenu = useCallback((ev: React.MouseEvent<HTMLElement>) => {
         ev.preventDefault();
@@ -126,21 +123,31 @@ export const SiteHeader: React.FunctionComponent<HTMLAttributes<HTMLElement>> = 
         };
     }, theme);
 
-    const userMenuItems: IContextualMenuItem[] = [
-        {
-            key: 'header',
-            text: 'Signed in to GitHub',
-            itemType: ContextualMenuItemType.Header,
-        },
-        {
-            key: 'signout',
-            text: 'Sign out',
-            onClick: () => {
-                auth.signOut();
-                history.push('/');
+    const userMenuItems = useMemo<IContextualMenuItem[]>(
+        () => [
+            {
+                key: 'header',
+                text: `Signed in to ${git.providerName}`,
+                itemType: ContextualMenuItemType.Header,
             },
-        },
-    ];
+            {
+                key: 'signout',
+                text: 'Sign out',
+                onClick: () => {
+                    auth.signOut();
+                    history.push('/');
+                },
+            },
+        ],
+        [git],
+    );
+
+    const persona = useMemo<IPersonaSharedProps>(() => {
+        return {
+            text: git.username,
+            imageUrl: git.avatarUrl,
+        };
+    }, [git]);
 
     return (
         <header className={`${classNames.root} ${className ?? ''}`} {...props}>
@@ -181,10 +188,10 @@ export const SiteHeader: React.FunctionComponent<HTMLAttributes<HTMLElement>> = 
                         }}
                     />
                 </Stack.Item>
-                {auth.isAuthenticated && (
+                {git.isAuthenticated && (
                     // TODO: get GitHub name, show logout button
                     <Stack.Item>
-                        <Persona {...mockPersona} size={PersonaSize.size32} ref={userRef} onClick={onShowUserMenu} />
+                        <Persona {...persona} size={PersonaSize.size32} ref={userRef} onClick={onShowUserMenu} />
                         <ContextualMenu
                             items={userMenuItems}
                             hidden={!showUserMenu}

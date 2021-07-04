@@ -1,8 +1,8 @@
 import { Link, mergeStyleSets, Stack } from '@fluentui/react';
 import React from 'react';
 import { Alert } from '../Alert';
-import { useAuth } from '../AuthProvider';
 import { ExtLink } from '../ExtLink';
+import { useGit } from '../git/GitApiProvider';
 import { LoginSection } from '../login/LoginSection';
 import { PrivacyNotice } from '../login/PrivacyNotice';
 import { PageTitle } from '../PageTitle';
@@ -17,7 +17,7 @@ const classNames = mergeStyleSets({
 });
 
 export const HomePage: React.FunctionComponent = () => {
-    const auth = useAuth();
+    const git = useGit();
 
     return (
         <Stack className={classNames.root}>
@@ -79,7 +79,7 @@ export const HomePage: React.FunctionComponent = () => {
                 </Alert>
             </Section>
 
-            {!auth.isAuthenticated && <LoginSection />}
+            {!git.isAuthenticated && <LoginSection />}
 
             <PrivacyNotice />
         </Stack>

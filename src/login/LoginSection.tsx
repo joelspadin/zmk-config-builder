@@ -1,7 +1,7 @@
 import { mergeStyleSets, Text } from '@fluentui/react';
 import React from 'react';
 import { Section } from '../Section';
-import { LoginButton } from './LoginButton';
+import { GitHubLoginButton } from './GitHubLoginButton';
 
 const classNames = mergeStyleSets({
     actions: {
@@ -15,7 +15,7 @@ export const LoginSection: React.FunctionComponent = () => {
         <Section>
             <p>Please sign in to GitHub so this app can modify your repo.</p>
             <div className={classNames.actions}>
-                <LoginButton />
+                <GitHubLoginButton />
             </div>
             <Text block as="h3" variant="large">
                 A note on permissions
