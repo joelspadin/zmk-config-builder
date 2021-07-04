@@ -34,12 +34,12 @@ const classNames = mergeStyleSets({
         [mediaQuery.widthMedium]: {
             paddingLeft: 0,
         },
-    },
+    } as IStyle,
     brand: {
         textDecoration: 'none',
         display: 'flex',
         alignItems: 'center',
-    },
+    } as IStyle,
     icon: {
         width: 32,
         height: 32,
@@ -49,11 +49,11 @@ const classNames = mergeStyleSets({
         [mediaQuery.widthMedium]: {
             display: 'block',
         },
-    },
+    } as IStyle,
     title: {
         lineHeight: SiteHeaderHeight,
         fontWeight: 600,
-    },
+    } as IStyle,
     links: {
         display: 'none',
         justifyContent: 'flex-end',
@@ -71,7 +71,10 @@ const classNames = mergeStyleSets({
                 textDecoration: 'underline',
             },
         },
-    },
+    } as IStyle,
+    persona: {
+        cursor: 'pointer',
+    } as IStyle,
 });
 
 const stackTokens: IStackTokens = {
@@ -146,6 +149,7 @@ export const SiteHeader: React.FunctionComponent<HTMLAttributes<HTMLElement>> = 
         return {
             text: git.username,
             imageUrl: git.avatarUrl,
+            size: PersonaSize.size32,
         };
     }, [git]);
 
@@ -191,7 +195,7 @@ export const SiteHeader: React.FunctionComponent<HTMLAttributes<HTMLElement>> = 
                 {git.isAuthenticated && (
                     // TODO: get GitHub name, show logout button
                     <Stack.Item>
-                        <Persona {...persona} size={PersonaSize.size32} ref={userRef} onClick={onShowUserMenu} />
+                        <Persona {...persona} className={classNames.persona} ref={userRef} onClick={onShowUserMenu} />
                         <ContextualMenu
                             items={userMenuItems}
                             hidden={!showUserMenu}
