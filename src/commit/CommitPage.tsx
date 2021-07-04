@@ -1,48 +1,57 @@
-import { IPivotStyles, Pivot, PivotItem, Stack } from '@fluentui/react';
+import { ITextFieldStyles, mergeStyleSets, PrimaryButton, Stack, Text, TextField } from '@fluentui/react';
 import React from 'react';
-import { useHistory, useParams } from 'react-router-dom';
 import { PageTitle } from '../PageTitle';
-import { ChangesPage } from './ChangesPage';
-import { GitGraphPage } from './GitGraphPage';
+import { Section } from '../Section';
+import { FileChangeCard } from './FileChangeCard';
+import { buildMatrixFile, deleteConfigFile, devicetreeFile, kconfigFile, renameConfigFile } from './mockFiles';
 
-const pivotStyles: Partial<IPivotStyles> = {
-    itemContainer: {
-        marginTop: 10,
+const classNames = mergeStyleSets({
+    message: {},
+    actions: {
+        marginTop: 28,
+    },
+});
+
+const textFieldStyles: Partial<ITextFieldStyles> = {
+    field: {
+        fontFamily: "source-code-pro, Menlo, Monaco, Consolas, 'Courier New', monospace",
+        height: 64,
     },
 };
 
-interface ICommitPageParams {
-    activeTab?: string;
-}
-
-enum Tabs {
-    Changes = 'changes',
-    GitGraph = 'graph',
-}
-
 export const CommitPage: React.FunctionComponent = () => {
-    const history = useHistory();
-
-    const { activeTab } = useParams<ICommitPageParams>();
-
-    const setTab = (item?: PivotItem) => {
-        const key = item?.props.itemKey;
-        if (key) {
-            history.push(`/commit/${key}`);
-        }
-    };
-
     return (
-        <Stack>
+        <>
             <PageTitle>Commit</PageTitle>
-            <Pivot styles={pivotStyles} selectedKey={activeTab ?? Tabs.Changes} onLinkClick={setTab}>
-                <PivotItem headerText="Changes" itemIcon="BranchCommit" itemKey={Tabs.Changes}>
-                    <ChangesPage />
-                </PivotItem>
-                <PivotItem headerText="Graph" itemIcon="GitGraph" itemKey={Tabs.GitGraph}>
-                    <GitGraphPage />
-                </PivotItem>
-            </Pivot>
-        </Stack>
+            <Section>
+                <p>
+                    Check below for a list of staged changes. Once you&apos;re happy with them, write a short
+                    description of the changes and click &ldquo;Commit and push&rdquo; to save them as a commit and push
+                    the commit to GitHub.
+                </p>
+                <TextField
+                    label="Commit message"
+                    multiline
+                    autoAdjustHeight
+                    styles={textFieldStyles}
+                    className={classNames.message}
+                />
+                <Stack horizontal className={classNames.actions}>
+                    <PrimaryButton text="Commit and push" />
+                </Stack>
+            </Section>
+
+            <Text block as="h2" variant="xLarge">
+                Staged changes
+            </Text>
+
+            <Stack>
+                <FileChangeCard {...deleteConfigFile} />
+                <FileChangeCard {...renameConfigFile} />
+                <FileChangeCard {...buildMatrixFile} />
+                <FileChangeCard {...devicetreeFile} />
+                <FileChangeCard {...kconfigFile} />
+            </Stack>
+        </>
     );
 };

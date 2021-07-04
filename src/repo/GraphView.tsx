@@ -3,7 +3,7 @@ import React, { useMemo } from 'react';
 import { GitGraph } from '../gitgraph/GitGraph';
 import { GraphConfig } from '../gitgraph/ReactSvgRenderer';
 import { Commit } from '../gitgraph/types';
-import { Section } from '../Section';
+import { Section, SectionHeader } from '../Section';
 
 const mockCommits: Commit[] = [
     {
@@ -27,13 +27,14 @@ const mockCommits: Commit[] = [
         hash: '4',
         message: 'Three',
         parents: ['3'],
+        branches: ['origin/main'],
         tags: ['v1.0'],
     },
     {
         hash: 'b2',
         message: 'Fix things',
         parents: ['b1'],
-        branches: ['feature-2'],
+        branches: ['origin/feature-2', 'feature-2'],
     },
     {
         hash: '3',
@@ -60,7 +61,7 @@ const mockCommits: Commit[] = [
         hash: 'a1',
         message: 'Branch!',
         parents: ['1'],
-        branches: ['feature-1'],
+        branches: ['origin/feature-1', 'feature-1'],
     },
     {
         hash: '1',
@@ -74,7 +75,7 @@ const mockCommits: Commit[] = [
     },
 ];
 
-export const GitGraphPage: React.FunctionComponent = () => {
+export const GraphView: React.FunctionComponent = () => {
     const theme = useTheme();
     const graphConfig = useMemo<GraphConfig>(
         () => ({
@@ -102,10 +103,11 @@ export const GitGraphPage: React.FunctionComponent = () => {
     );
 
     return (
-        <Section>
-            <p>This graph shows the commits in your repo.</p>
-            <p>TODO: add a way to switch branches here.</p>
-            <GitGraph commits={mockCommits} graphConfig={graphConfig} />
-        </Section>
+        <>
+            <Section>
+                <SectionHeader>Git graph</SectionHeader>
+                <GitGraph commits={mockCommits} graphConfig={graphConfig} />
+            </Section>
+        </>
     );
 };

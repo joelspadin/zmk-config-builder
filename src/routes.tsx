@@ -7,7 +7,7 @@ import { CommitPage } from './commit/CommitPage';
 import { FilesPage } from './files/FilesPage';
 import { HomePage } from './home/HomePage';
 import { LoginPage } from './login/LoginPage';
-import { RepoSelectPage } from './repo/RepoSelectPage';
+import { RepoPage } from './repo/RepoPage';
 import { SourcesPage } from './sources/SourcesPage';
 
 const AuthRoute: React.FunctionComponent<RouteProps> = ({ component, ...props }) => {
@@ -35,9 +35,9 @@ export const Routes: React.FunctionComponent = () => {
             <Route path="/login" component={LoginPage} />
             <AuthRoute path="/boards" component={BoardsPage} />
             <AuthRoute path="/builds" component={BuildsPage} />
-            <AuthRoute path="/commit/:activeTab?" component={CommitPage} />
+            <AuthRoute path="/commit" component={CommitPage} />
             <AuthRoute path="/files" component={FilesPage} />
-            <AuthRoute path="/repo" component={RepoSelectPage} />
+            <AuthRoute path="/repo/:activeTab?" component={RepoPage} />
             <AuthRoute path="/sources" component={SourcesPage} />
         </Switch>
     );

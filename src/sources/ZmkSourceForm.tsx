@@ -1,18 +1,17 @@
 import { ComboBox, IComboBoxOption, IComboBoxStyles, IDropdownStyles, Stack } from '@fluentui/react';
 import React from 'react';
+import { CONTROL_WIDTH } from '../styles';
 import { RemoteDropdown } from './RemoteDropdown';
-
-const ControlWidth = 300;
 
 const dropdownStyles: Partial<IDropdownStyles> = {
     dropdown: {
-        width: ControlWidth,
+        width: CONTROL_WIDTH,
     },
 };
 
 const comboBoxStyles: Partial<IComboBoxStyles> = {
     root: {
-        width: ControlWidth,
+        width: CONTROL_WIDTH,
     },
 };
 

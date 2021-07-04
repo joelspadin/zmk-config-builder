@@ -1,39 +1,75 @@
-import { ActionButton, ComboBox, IComboBoxOption, IComboBoxStyles, PrimaryButton, Stack } from '@fluentui/react';
+import {
+    ActionButton,
+    ComboBox,
+    IComboBoxOption,
+    IComboBoxStyles,
+    mergeStyleSets,
+    PrimaryButton,
+    Stack,
+} from '@fluentui/react';
 import React from 'react';
-import { PageTitle } from '../PageTitle';
 import { Section, SectionHeader } from '../Section';
-import { UnsavedChangesPrompt } from '../UnsavedChangesPrompt';
+import { GraphView } from './GraphView';
 
-const ControlWidth = 300;
+const CONTROL_WIDTH = 300;
+
+const classNames = mergeStyleSets({
+    actions: {
+        marginTop: 28,
+    },
+});
 
 const comboBoxStyles: Partial<IComboBoxStyles> = {
     root: {
-        width: ControlWidth,
+        width: CONTROL_WIDTH,
     },
 };
 
 export const RepoSelectPage: React.FunctionComponent = () => {
-    const hasChanges = false;
-    const repoOptions: IComboBoxOption[] = [];
-    const branchOptions: IComboBoxOption[] = [];
+    const repoOptions: IComboBoxOption[] = [
+        {
+            key: 'johndoe/zmk-config',
+            text: 'johndoe/zmk-config',
+        },
+    ];
+    const branchOptions: IComboBoxOption[] = [
+        {
+            key: 'main',
+            text: 'main',
+        },
+        {
+            key: 'feature-1',
+            text: 'feature-1',
+        },
+        {
+            key: 'feature-2',
+            text: 'feature-2',
+        },
+    ];
 
     return (
         <>
-            <UnsavedChangesPrompt hasChanges={hasChanges} />
             <Stack>
-                <PageTitle>Repository</PageTitle>
-
                 <Section>
                     <SectionHeader>Select your ZMK config repo</SectionHeader>
+                    <p>
+                        If you already have a ZMK config repo, select it from the list below. Otherwise, you can create
+                        a new repo from a template.
+                    </p>
                     <ActionButton text="Create a new repo" iconProps={{ iconName: 'Add' }} />
-                    <Stack tokens={{ childrenGap: 10 }}>
-                        <ComboBox label="Repository" options={repoOptions} styles={comboBoxStyles} />
-                        <ComboBox label="Branch" options={branchOptions} styles={comboBoxStyles} />
+                    <ComboBox label="Repository" options={repoOptions} styles={comboBoxStyles} useComboBoxAsMenuWidth />
+                    <Stack horizontal className={classNames.actions}>
+                        <PrimaryButton text="Change repo" />
                     </Stack>
                 </Section>
-                <Stack horizontal>
-                    <PrimaryButton text="Save changes" disabled={!hasChanges} />
-                </Stack>
+                <Section>
+                    <SectionHeader>Select the branch to edit</SectionHeader>
+                    <ComboBox label="Branch" options={branchOptions} styles={comboBoxStyles} useComboBoxAsMenuWidth />
+                    <Stack horizontal className={classNames.actions}>
+                        <PrimaryButton text="Change branch" />
+                    </Stack>
+                </Section>
+                <GraphView />
             </Stack>
         </>
     );
