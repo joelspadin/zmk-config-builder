@@ -37,8 +37,10 @@ export function useAuth(): AuthState {
     const auth = useContext(AuthContext);
     const git = useContext(GitApiContext);
 
+    console.log(auth, git);
+
     return {
-        isAuthenticating: git === undefined,
+        isAuthenticating: auth.data !== undefined && git === undefined,
         isAuthenticated: git?.isAuthenticated ?? false,
         ...auth,
     };
