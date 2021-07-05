@@ -46,24 +46,22 @@ export const CreateRepoPage: React.FunctionComponent = () => {
 
     return (
         <>
-            <Stack>
-                <Section>
-                    <SectionHeader>Create a new repo</SectionHeader>
-                    <p>Enter a name for your new ZMK config repo. We&apos;ll do the rest.</p>
-                    <TextField
-                        label="Name"
-                        value={name}
-                        autoComplete="off"
-                        onChange={(ev, newValue) => setName(newValue || '')}
-                        styles={textFieldStyles}
-                        errorMessage={errorMessage}
-                    />
+            <Section>
+                <SectionHeader>Create a new repo</SectionHeader>
+                <p>Enter a name for your new ZMK config repo. We&apos;ll do the rest.</p>
+                <TextField
+                    label="Name"
+                    value={name}
+                    autoComplete="off"
+                    onChange={(ev, newValue) => setName(newValue || '')}
+                    styles={textFieldStyles}
+                    errorMessage={errorMessage}
+                />
 
-                    <Stack horizontal className={classNames.actions}>
-                        <PrimaryButton text="Create repo" disabled={!!errorMessage} />
-                    </Stack>
-                </Section>
-            </Stack>
+                <Stack horizontal className={classNames.actions}>
+                    <PrimaryButton text="Create repo" disabled={!!errorMessage} />
+                </Stack>
+            </Section>
         </>
     );
 };

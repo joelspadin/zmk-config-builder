@@ -1,5 +1,6 @@
 import { IShimmerElement, mergeStyleSets, Shimmer, ShimmerElementType } from '@fluentui/react';
 import React from 'react';
+import { CONTROL_WIDTH } from './styles';
 
 const classNames = mergeStyleSets({
     header: {
@@ -10,9 +11,12 @@ const classNames = mergeStyleSets({
         margin: '14px 0',
         maxWidth: '60em',
     },
-    section: {
-        marginBottom: 28,
-        maxWidth: '60em',
+    label: {
+        padding: '5px 0',
+        maxWidth: '6em',
+    },
+    control: {
+        maxWidth: CONTROL_WIDTH,
     },
 });
 
@@ -30,11 +34,13 @@ export const PageShimmer: React.FunctionComponent = () => {
     );
 };
 
-export const SectionShimmer: React.FunctionComponent = () => {
-    const section: IShimmerElement[] = [{ type: ShimmerElementType.line, height: 100 }];
+export const ControlShimmer: React.FunctionComponent = () => {
+    const label: IShimmerElement[] = [{ type: ShimmerElementType.line, height: 19 }];
+    const control: IShimmerElement[] = [{ type: ShimmerElementType.line, height: 32 }];
     return (
         <>
-            <Shimmer shimmerElements={section} className={classNames.section} />
+            <Shimmer shimmerElements={label} className={classNames.label} />
+            <Shimmer shimmerElements={control} className={classNames.control} />
         </>
     );
 };

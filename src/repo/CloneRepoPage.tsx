@@ -12,7 +12,7 @@ import { useAsync } from 'react-use';
 import { useGit } from '../git/GitApiProvider';
 import { IGitApi, IRepoId } from '../git/IGitApi';
 import { Section, SectionHeader } from '../Section';
-import { SectionShimmer } from '../shimmer';
+import { ControlShimmer } from '../shimmer';
 import { CONTROL_WIDTH } from '../styles';
 import { groupBy } from '../util';
 import { BranchSelect } from './BranchSelect';
@@ -83,45 +83,48 @@ export const CloneRepoPage: React.FunctionComponent = () => {
 
     const repoOptions = useAsync(() => getRepoOptions(git), [git]);
 
-    if (repoOptions.loading) {
-        return <SectionShimmer />;
-    }
-
     return (
         <>
-            <Stack>
-                <Section>
-                    <SectionHeader>Select the repo to clone</SectionHeader>
-                    <p>
-                        Select your ZMK config repo and clone it to make a copy of it in your browser that ZMK Config
-                        Builder can edit.
-                    </p>
-                    <ComboBox
-                        label="Repository"
-                        allowFreeform
-                        autoComplete="on"
-                        useComboBoxAsMenuWidth
-                        openOnKeyboardFocus
-                        options={repoOptions.value!}
-                        styles={comboBoxStyles}
-                        selectedKey={repo ? repoKey(repo) : undefined}
-                        onChange={(ev, option) => {
-                            setRepo(option?.data as IRepoId);
-                        }}
-                    />
-                    <BranchSelect
-                        label="Branch"
-                        repo={repo}
-                        value={branch}
-                        onChange={setBranch}
-                        styles={comboBoxStyles}
-                        resetToDefault
-                    />
-                    <Stack horizontal className={classNames.actions}>
-                        <PrimaryButton text="Clone repo" disabled={!repo || !branch} />
-                    </Stack>
-                </Section>
-            </Stack>
+            <Section>
+                <SectionHeader>Select the repo to clone</SectionHeader>
+                <p>
+                    Select your ZMK config repo and clone it to make a copy of it in your browser that ZMK Config
+                    Builder can edit.
+                </p>
+                {repoOptions.loading ? (
+                    <>
+                        <ControlShimmer />
+                        <ControlShimmer />
+                    </>
+                ) : (
+                    <>
+                        <ComboBox
+                            label="Repository"
+                            allowFreeform
+                            autoComplete="on"
+                            useComboBoxAsMenuWidth
+                            openOnKeyboardFocus
+                            options={repoOptions.value!}
+                            styles={comboBoxStyles}
+                            selectedKey={repo ? repoKey(repo) : undefined}
+                            onChange={(ev, option) => {
+                                setRepo(option?.data as IRepoId);
+                            }}
+                        />
+                        <BranchSelect
+                            label="Branch"
+                            repo={repo}
+                            value={branch}
+                            onChange={setBranch}
+                            styles={comboBoxStyles}
+                            resetToDefault
+                        />
+                    </>
+                )}
+                <Stack horizontal className={classNames.actions}>
+                    <PrimaryButton text="Clone repo" disabled={!repo || !branch} />
+                </Stack>
+            </Section>
         </>
     );
 };
