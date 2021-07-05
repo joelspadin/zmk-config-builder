@@ -90,20 +90,13 @@ export async function createGitHubApi(auth: AuthGitHubToken): Promise<GitHubApi>
         userAgent: 'zmk-config-builder',
     });
 
-    try {
-        const user = await octokit.rest.users.getAuthenticated();
-        const { login, name, avatar_url } = user.data;
+    const user = await octokit.rest.users.getAuthenticated();
+    const { login, name, avatar_url } = user.data;
 
-        return new GitHubApi(octokit, {
-            isAuthenticated: true,
-            login,
-            name,
-            avatarUrl: avatar_url,
-        });
-    } catch (ex) {
-        // TODO: show an error notification
-        return new GitHubApi(octokit, {
-            isAuthenticated: false,
-        });
-    }
+    return new GitHubApi(octokit, {
+        isAuthenticated: true,
+        login,
+        name,
+        avatarUrl: avatar_url,
+    });
 }

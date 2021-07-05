@@ -4,6 +4,7 @@ import { BrowserRouter as Router } from 'react-router-dom';
 import './App.css';
 import { AuthProvider } from './git/AuthProvider';
 import { GitApiProvider } from './git/GitApiProvider';
+import { MessageBarProvider } from './MessageBarProvider';
 import { Routes } from './routes';
 import { SiteHeader, SiteHeaderHeight } from './SiteHeader';
 import { SiteNav } from './SiteNav';
@@ -16,6 +17,7 @@ interface IAppStyles {
     nav: IStyle;
     contentWrapper: IStyle;
     content: IStyle;
+    message: IStyle;
 }
 
 const getClassNames = classNamesFunction<Theme, IAppStyles>();
@@ -50,8 +52,6 @@ const Content: React.FunctionComponent = () => {
             },
             contentWrapper: {
                 backgroundColor: theme.palette.neutralLighterAlt,
-                paddingLeft: 28,
-                paddingRight: 28,
                 [mediaQuery.widthMedium]: {
                     position: 'absolute',
                     top: SiteHeaderHeight,
@@ -59,15 +59,26 @@ const Content: React.FunctionComponent = () => {
                     right: 0,
                     bottom: 0,
                     overflow: 'auto',
-                    paddingLeft: 40,
-                    paddingRight: 40,
-                    paddingBottom: 40,
                 },
                 [mediaQuery.widthWide]: {
                     left: NavWidthWide,
                 },
             },
-            content: {},
+            content: {
+                paddingLeft: 28,
+                paddingRight: 28,
+                [mediaQuery.widthMedium]: {
+                    paddingLeft: 40,
+                    paddingRight: 40,
+                    paddingBottom: 40,
+                },
+            },
+            message: {
+                boxShadow: theme.effects.elevation8,
+                [mediaQuery.widthMedium]: {
+                    maxWidth: 'calc(60em + 136px)',
+                },
+            },
         };
     }, theme);
 
@@ -80,9 +91,11 @@ const Content: React.FunctionComponent = () => {
                 <SiteNav />
             </div>
             <div className={classNames.contentWrapper}>
-                <div className={classNames.content}>
-                    <Routes />
-                </div>
+                <MessageBarProvider className={classNames.message}>
+                    <div className={classNames.content}>
+                        <Routes />
+                    </div>
+                </MessageBarProvider>
             </div>
         </div>
     );

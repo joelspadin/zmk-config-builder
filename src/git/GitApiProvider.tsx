@@ -1,5 +1,6 @@
 import React, { createContext, useContext } from 'react';
 import { useAsync } from 'react-use';
+import { useMessageBar } from '../MessageBarProvider';
 import { AuthContext, AuthState, BaseAuthState } from './AuthProvider';
 import { GitApiStub } from './GitApiStub';
 import { createGitHubApi } from './GitHubApi';
@@ -23,8 +24,16 @@ async function getApi(auth: BaseAuthState): Promise<IGitApi | undefined> {
 export const GitApiContext = createContext<IGitApi | undefined>(undefined);
 
 export const GitApiProvider: React.FunctionComponent = ({ children }) => {
+    const messageBar = useMessageBar();
     const auth = useContext(AuthContext);
-    const api = useAsync(async () => getApi(auth), [auth]);
+    const api = useAsync(async () => {
+        try {
+            return await getApi(auth);
+        } catch (error) {
+            messageBar.error(error);
+            return undefined;
+        }
+    }, [auth]);
 
     return <GitApiContext.Provider value={api.value}>{children}</GitApiContext.Provider>;
 };
@@ -36,8 +45,6 @@ export function useGit(): IGitApi {
 export function useAuth(): AuthState {
     const auth = useContext(AuthContext);
     const git = useContext(GitApiContext);
-
-    console.log(auth, git);
 
     return {
         isAuthenticating: auth.data !== undefined && git === undefined,

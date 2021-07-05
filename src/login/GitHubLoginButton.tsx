@@ -3,6 +3,7 @@ import { oauthAuthorizationUrl } from '@octokit/oauth-authorization-url';
 import React, { useState } from 'react';
 import { GITHUB_CLIENT_ID, GITHUB_OAUTH_CLIENT, GITHUB_SCOPES } from '../env';
 import { useAuth } from '../git/GitApiProvider';
+import { useMessageBar } from '../MessageBarProvider';
 import { getDefaultPopupFeatures } from './popup';
 
 // Icon isn't vertically centered for some reason.
@@ -21,6 +22,7 @@ enum State {
 }
 
 export const GitHubLoginButton: React.FunctionComponent = () => {
+    const messageBar = useMessageBar();
     const auth = useAuth();
     const [state, setState] = useState(State.Default);
 
@@ -41,8 +43,12 @@ export const GitHubLoginButton: React.FunctionComponent = () => {
             setState(State.Default);
         } catch (error) {
             setState(State.Default);
-            // TODO: show an error popup
-            console.error(error);
+
+            if (error instanceof WindowClosedError) {
+                // Ignore this. It should be obvious what happened, so no need for a message.
+            } else {
+                messageBar.error(error);
+            }
         }
     };
 
@@ -84,6 +90,8 @@ interface AuthParams {
     state: string;
 }
 
+class WindowClosedError extends Error {}
+
 class AuthPopupWindow {
     private window: Window | null = null;
     private interval?: number;
@@ -123,7 +131,7 @@ class AuthPopupWindow {
 
                     if (!popup || popup.closed) {
                         this.close();
-                        reject(new Error('Sign in window was closed.'));
+                        reject(new WindowClosedError('Sign in window was closed.'));
                         return;
                     }
 
@@ -152,7 +160,7 @@ class AuthPopupWindow {
 
     private cancel() {
         if (this.interval) {
-            this.window?.clearInterval(this.interval);
+            window.clearInterval(this.interval);
             this.interval = undefined;
         }
     }

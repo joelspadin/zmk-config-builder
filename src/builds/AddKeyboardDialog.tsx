@@ -6,6 +6,8 @@ import {
     IModalProps,
     IStackProps,
     IStyle,
+    MessageBar,
+    MessageBarType,
     Modal,
     PrimaryButton,
     Stack,
@@ -99,6 +101,7 @@ export const AddKeyboardDialog: React.FunctionComponent<IAddKeyboardDialogProps>
     const [mainBoard, setMainBoard] = useState<IKeyboardComponent | undefined>();
     const [mcuBoard, setMcuBoard] = useState<IKeyboardComponent | undefined>();
     const [extraArgs, setExtraArgs] = useState('');
+    const [errorText, setErrorText] = useState<string>();
 
     const titleId = useId('title');
     const theme = useTheme();
@@ -134,13 +137,18 @@ export const AddKeyboardDialog: React.FunctionComponent<IAddKeyboardDialogProps>
             onConfirm(getBuildItems(mainBoard, mcuBoard, extraArgs));
             setMainBoard(undefined);
             setExtraArgs('');
-        } catch (e) {
-            // TODO: show error
+        } catch (error) {
+            setErrorText(error?.message ?? error.toString());
         }
     }, [mainBoard, mcuBoard, extraArgs]);
 
     return (
         <Modal topOffsetFixed {...props}>
+            {errorText && (
+                <MessageBar messageBarType={MessageBarType.error} onDismiss={() => setErrorText(undefined)}>
+                    {errorText}
+                </MessageBar>
+            )}
             <div id={titleId} className={classNames.header}>
                 Add keyboard
             </div>
