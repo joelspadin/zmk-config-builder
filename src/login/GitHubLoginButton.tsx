@@ -2,7 +2,7 @@ import { DefaultButton, IButtonStyles, Spinner } from '@fluentui/react';
 import { oauthAuthorizationUrl } from '@octokit/oauth-authorization-url';
 import React, { useState } from 'react';
 import { GITHUB_CLIENT_ID, GITHUB_OAUTH_CLIENT, GITHUB_SCOPES } from '../env';
-import { useAuth } from '../git/AuthProvider';
+import { useAuth } from '../git/GitApiProvider';
 import { getDefaultPopupFeatures } from './popup';
 
 // Icon isn't vertically centered for some reason.
@@ -33,7 +33,7 @@ export const GitHubLoginButton: React.FunctionComponent = () => {
             setState(State.Authenticating);
 
             const token = await getAccessToken(params);
-            auth.authenticate({
+            auth.signIn({
                 type: 'github',
                 token,
             });

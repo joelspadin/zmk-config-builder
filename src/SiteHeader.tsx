@@ -18,9 +18,8 @@ import {
 } from '@fluentui/react';
 import React, { HTMLAttributes, useCallback, useContext, useMemo, useRef, useState } from 'react';
 import { Link, useHistory } from 'react-router-dom';
-import { ExtLink } from './ExtLink';
-import { useAuth } from './git/AuthProvider';
-import { useGit } from './git/GitApiProvider';
+import { ExternalLink } from './ExternalLink';
+import { useAuth, useGit } from './git/GitApiProvider';
 import logoUrl from './logo.svg';
 import { mediaQuery } from './styles';
 import { DarkModeContext } from './ThemeProvider';
@@ -171,12 +170,12 @@ export const SiteHeader: React.FunctionComponent<HTMLAttributes<HTMLElement>> = 
                         className={`${classNames.links} ${themeClasses.links}`}
                         tokens={linkStackTokens}
                     >
-                        <ExtLink noIcon href="https://zmk.dev">
+                        <ExternalLink noIcon href="https://zmk.dev">
                             ZMK Firmware
-                        </ExtLink>
-                        <ExtLink noIcon href="https://github.com/joelspadin/zmk-config-builder">
+                        </ExternalLink>
+                        <ExternalLink noIcon href="https://github.com/joelspadin/zmk-config-builder">
                             GitHub
-                        </ExtLink>
+                        </ExternalLink>
                     </Stack>
                 </Stack.Item>
                 <Stack.Item>

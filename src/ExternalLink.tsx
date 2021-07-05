@@ -17,14 +17,19 @@ const getClassNames = memoizeFunction(() => {
     });
 });
 
-export interface IExtLinkProps extends ILinkProps {
+export interface IExternalLinkProps extends ILinkProps {
     noIcon?: boolean;
 }
 
 /**
  * Open a link in a new tab/window.
  */
-export const ExtLink: React.FunctionComponent<ILinkProps> = ({ children, noIcon, className, ...props }) => {
+export const ExternalLink: React.FunctionComponent<IExternalLinkProps> = ({
+    children,
+    noIcon,
+    className,
+    ...props
+}) => {
     const classNames = getClassNames();
     className = `${className ?? ''} ${noIcon ? '' : classNames.link}`;
 

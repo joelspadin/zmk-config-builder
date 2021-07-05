@@ -1,4 +1,4 @@
-import React, { createContext, useContext } from 'react';
+import React, { createContext } from 'react';
 import { useLocalStorage } from 'react-use';
 
 export interface AuthGitHubToken {
@@ -8,24 +8,25 @@ export interface AuthGitHubToken {
 
 export type AuthData = AuthGitHubToken;
 
-export interface AuthState {
+export interface BaseAuthState {
     readonly data: AuthData | undefined;
-    authenticate(data: AuthData): void;
+    signIn(data: AuthData): void;
     signOut(): void;
 }
 
-export const AuthContext = createContext<AuthState>({
+export interface AuthState extends BaseAuthState {
+    readonly isAuthenticated: boolean;
+    readonly isAuthenticating: boolean;
+}
+
+export const AuthContext = createContext<BaseAuthState>({
     data: undefined,
-    authenticate: () => {},
+    signIn: () => {},
     signOut: () => {},
 });
 
 export const AuthProvider: React.FunctionComponent = ({ children }) => {
-    const [data, authenticate, signOut] = useLocalStorage<AuthData | undefined>('auth');
+    const [data, signIn, signOut] = useLocalStorage<AuthData | undefined>('auth');
 
-    return <AuthContext.Provider value={{ data, authenticate, signOut }}>{children}</AuthContext.Provider>;
+    return <AuthContext.Provider value={{ data, signIn, signOut }}>{children}</AuthContext.Provider>;
 };
-
-export function useAuth(): AuthState {
-    return useContext(AuthContext);
-}

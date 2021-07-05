@@ -1,8 +1,9 @@
-import { Link, mergeStyleSets, Stack } from '@fluentui/react';
+import { mergeStyleSets, Stack } from '@fluentui/react';
 import React from 'react';
 import { Alert } from '../Alert';
-import { ExtLink } from '../ExtLink';
-import { useGit } from '../git/GitApiProvider';
+import { ExternalLink } from '../ExternalLink';
+import { useAuth } from '../git/GitApiProvider';
+import { InternalLink } from '../InternalLink';
 import { LoginSection } from '../login/LoginSection';
 import { PrivacyNotice } from '../login/PrivacyNotice';
 import { PageTitle } from '../PageTitle';
@@ -17,7 +18,7 @@ const classNames = mergeStyleSets({
 });
 
 export const HomePage: React.FunctionComponent = () => {
-    const git = useGit();
+    const auth = useAuth();
 
     return (
         <Stack className={classNames.root}>
@@ -25,7 +26,7 @@ export const HomePage: React.FunctionComponent = () => {
             <Section>
                 <p>
                     This application helps you create and edit a personal Git repository for{' '}
-                    <ExtLink href="https://zmk.dev">ZMK Firmware</ExtLink>.
+                    <ExternalLink href="https://zmk.dev">ZMK Firmware</ExternalLink>.
                 </p>
                 <p>
                     This is your own sandbox where you can change keymaps and keyboard settings and even add support for
@@ -35,39 +36,39 @@ export const HomePage: React.FunctionComponent = () => {
                 <p>Sign in with GitHub, then use the links in the menu to edit your repo:</p>
                 <ul>
                     <li>
-                        <Link href="/repo">
+                        <InternalLink href="/repo">
                             <strong>Repo:</strong>
-                        </Link>{' '}
+                        </InternalLink>{' '}
                         choose the repo to edit, or create a new one.
                     </li>
                     <li>
-                        <Link href="/sources">
+                        <InternalLink href="/sources">
                             <strong>Sources:</strong>
-                        </Link>{' '}
+                        </InternalLink>{' '}
                         choose the version of ZMK used to build firmware.
                     </li>
                     <li>
-                        <Link href="/boards">
+                        <InternalLink href="/boards">
                             <strong>Keyboards:</strong>
-                        </Link>{' '}
+                        </InternalLink>{' '}
                         customize keymaps and keyboard settings; add new keyboards from a template.
                     </li>
                     <li>
-                        <Link href="/builds">
+                        <InternalLink href="/builds">
                             <strong>Builds:</strong>
-                        </Link>{' '}
+                        </InternalLink>{' '}
                         choose which firmware GitHub will build.
                     </li>
                     <li>
-                        <Link href="/files">
+                        <InternalLink href="/files">
                             <strong>Files:</strong>
-                        </Link>{' '}
+                        </InternalLink>{' '}
                         view and manually edit the files in the repo.
                     </li>
                     <li>
-                        <Link href="/commit">
+                        <InternalLink href="/commit">
                             <strong>Commit:</strong>
-                        </Link>{' '}
+                        </InternalLink>{' '}
                         view your changes, commit them to the repo, and push them to GitHub.
                     </li>
                 </ul>
@@ -75,11 +76,12 @@ export const HomePage: React.FunctionComponent = () => {
                 <Alert>
                     This app makes changes to a local copy of the repo which is stored in your browser.{' '}
                     <strong>Your changes will not show up immediately on GitHub.</strong> Once you have made the changes
-                    you want, use the <Link href="/commit">commit page</Link> to save them and push them to GitHub.
+                    you want, use the <InternalLink href="/commit">commit page</InternalLink> to save them and push them
+                    to GitHub.
                 </Alert>
             </Section>
 
-            {!git.isAuthenticated && <LoginSection />}
+            {!auth.isAuthenticating && !auth.isAuthenticated && <LoginSection />}
 
             <PrivacyNotice />
         </Stack>

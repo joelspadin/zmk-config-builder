@@ -4,21 +4,26 @@ import { BoardsPage } from './boards/BoardsPage';
 import { BuildsPage } from './builds/BuildsPage';
 import { CommitPage } from './commit/CommitPage';
 import { FilesPage } from './files/FilesPage';
-import { useGit } from './git/GitApiProvider';
+import { useAuth } from './git/GitApiProvider';
 import { HomePage } from './home/HomePage';
 import { LoginPage } from './login/LoginPage';
 import { OAuthCallbackPage } from './login/OauthCallbackPage';
 import { RepoPage } from './repo/RepoPage';
+import { PageShimmer } from './shimmer';
 import { SourcesPage } from './sources/SourcesPage';
 
 const AuthRoute: React.FunctionComponent<RouteProps> = ({ component, ...props }) => {
-    const git = useGit();
+    const auth = useAuth();
 
     return (
         <Route
             {...props}
             render={(renderProps) => {
-                if (!git.isAuthenticated) {
+                if (auth.isAuthenticating) {
+                    return <PageShimmer />;
+                }
+
+                if (!auth.isAuthenticated) {
                     const search = (typeof props.path === 'string' && `?from=${encodeURIComponent(props.path)}`) || '';
                     return <Redirect to={{ pathname: '/login', search }} />;
                 }
