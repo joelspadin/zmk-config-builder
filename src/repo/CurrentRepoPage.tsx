@@ -62,7 +62,8 @@ export const CurrentRepoPage: React.FunctionComponent = () => {
                 <Section>
                     <SectionHeader>No repo selected</SectionHeader>
                     <p>
-                        To get started, <InternalLink href="/repo/clone">clone an existing ZMK repo</InternalLink> or{' '}
+                        To get started,{' '}
+                        <InternalLink href="/repo/clone">clone an existing ZMK config repo</InternalLink> or{' '}
                         <InternalLink href="/repo/create">create a new one</InternalLink>.
                     </p>
                 </Section>
