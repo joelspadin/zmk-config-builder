@@ -6,12 +6,9 @@ import {
     IModalProps,
     IStackProps,
     IStyle,
-    MessageBar,
-    MessageBarType,
     Modal,
     PrimaryButton,
     Stack,
-    TextField,
     Theme,
     useTheme,
 } from '@fluentui/react';
@@ -72,7 +69,7 @@ function getBuildItems(
     extraArgs?: string,
 ): IBuildItem[] {
     if (!mainBoard) {
-        throw new Error('Select a shield or standalone board.');
+        throw new Error('No main board selected.');
     }
 
     extraArgs = extraArgs || undefined;
@@ -82,7 +79,7 @@ function getBuildItems(
 
     if (mainBoard.type === 'shield') {
         if (!mcuParts || mcuParts.length === 0) {
-            throw new Error('Select an MCU board.');
+            throw new Error('No MCU board selected.');
         }
 
         const board = mcuParts[0];
@@ -100,8 +97,6 @@ function getBuildItems(
 export const AddKeyboardDialog: React.FunctionComponent<IAddKeyboardDialogProps> = ({ onConfirm, ...props }) => {
     const [mainBoard, setMainBoard] = useState<IKeyboardComponent | undefined>();
     const [mcuBoard, setMcuBoard] = useState<IKeyboardComponent | undefined>();
-    const [extraArgs, setExtraArgs] = useState('');
-    const [errorText, setErrorText] = useState<string>();
 
     const titleId = useId('title');
     const theme = useTheme();
@@ -133,22 +128,14 @@ export const AddKeyboardDialog: React.FunctionComponent<IAddKeyboardDialogProps>
             return;
         }
 
-        try {
-            onConfirm(getBuildItems(mainBoard, mcuBoard, extraArgs));
-            setMainBoard(undefined);
-            setExtraArgs('');
-        } catch (error) {
-            setErrorText(error?.message ?? error.toString());
-        }
-    }, [mainBoard, mcuBoard, extraArgs]);
+        onConfirm(getBuildItems(mainBoard, mcuBoard));
+        setMainBoard(undefined);
+    }, [mainBoard, mcuBoard]);
+
+    const disabled = !mainBoard || (mainBoard.type === 'shield' && !mcuBoard);
 
     return (
         <Modal topOffsetFixed {...props}>
-            {errorText && (
-                <MessageBar messageBarType={MessageBarType.error} onDismiss={() => setErrorText(undefined)}>
-                    {errorText}
-                </MessageBar>
-            )}
             <div id={titleId} className={classNames.header}>
                 Add keyboard
             </div>
@@ -158,15 +145,9 @@ export const AddKeyboardDialog: React.FunctionComponent<IAddKeyboardDialogProps>
                     {mainBoard?.type === 'shield' && (
                         <KeyboardSelect label="MCU Board" value={mcuBoard} onChange={setMcuBoard} options={mcuBoards} />
                     )}
-                    <TextField
-                        value={extraArgs}
-                        label="Extra CMake args"
-                        description="If you don't know what this is for, you don't need it. Leave it blank."
-                        onChange={(ev, newValue) => setExtraArgs(newValue || '')}
-                    />
                 </Stack>
                 <DialogFooter>
-                    <PrimaryButton text="Add keyboard" onClick={addKeyboard} />
+                    <PrimaryButton text="Add keyboard" onClick={addKeyboard} disabled={disabled} />
                     <DefaultButton text="Cancel" onClick={() => props.onDismiss?.()} />
                 </DialogFooter>
             </div>
