@@ -7,7 +7,7 @@ import { FilesPage } from './files/FilesPage';
 import { useAuth } from './git/GitApiProvider';
 import { HomePage } from './home/HomePage';
 import { LoginPage } from './login/LoginPage';
-import { OAuthCallbackPage } from './login/OauthCallbackPage';
+import { OAuthCallbackPage } from './login/OAuthCallbackPage';
 import { RepoPage } from './repo/RepoPage';
 import { PageShimmer } from './shimmer';
 import { SourcesPage } from './sources/SourcesPage';
