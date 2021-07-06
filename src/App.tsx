@@ -4,6 +4,7 @@ import { BrowserRouter as Router } from 'react-router-dom';
 import './App.css';
 import { AuthProvider } from './git/AuthProvider';
 import { GitApiProvider } from './git/GitApiProvider';
+import { RepoProvider } from './git/RepoProvider';
 import { MessageBarProvider } from './MessageBarProvider';
 import { Routes } from './routes';
 import { SiteHeader, SiteHeaderHeight } from './SiteHeader';
@@ -104,13 +105,15 @@ const Content: React.FunctionComponent = () => {
 export const App: React.FunctionComponent = () => {
     return (
         <ThemeProvider>
-            <AuthProvider>
-                <GitApiProvider>
-                    <Router>
-                        <Content />
-                    </Router>
-                </GitApiProvider>
-            </AuthProvider>
+            <RepoProvider>
+                <AuthProvider>
+                    <GitApiProvider>
+                        <Router>
+                            <Content />
+                        </Router>
+                    </GitApiProvider>
+                </AuthProvider>
+            </RepoProvider>
         </ThemeProvider>
     );
 };

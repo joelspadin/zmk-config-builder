@@ -4,13 +4,19 @@ import {
     IComboBoxStyles,
     mergeStyleSets,
     PrimaryButton,
+    ProgressIndicator,
     SelectableOptionMenuItemType,
     Stack,
 } from '@fluentui/react';
-import React, { useState } from 'react';
+import { GitProgressEvent } from 'isomorphic-git';
+import React, { useCallback, useMemo, useState } from 'react';
 import { useAsync } from 'react-use';
+import { cloneAndSelectRepo } from '../git/commands';
 import { useGit } from '../git/GitApiProvider';
-import { IGitApi, IRepoId } from '../git/IGitApi';
+import { getRepoDisplayName, getRepoGroup, getRepoKey, IGitApi, RepoId } from '../git/IGitApi';
+import { useRepos } from '../git/RepoProvider';
+import { InternalLink } from '../InternalLink';
+import { useMessageBar } from '../MessageBarProvider';
 import { Section, SectionHeader } from '../Section';
 import { ControlShimmer } from '../shimmer';
 import { CONTROL_WIDTH } from '../styles';
@@ -21,6 +27,9 @@ const classNames = mergeStyleSets({
     actions: {
         marginTop: 28,
     },
+    progress: {
+        marginTop: 28,
+    },
 });
 
 const comboBoxStyles: Partial<IComboBoxStyles> = {
@@ -29,45 +38,40 @@ const comboBoxStyles: Partial<IComboBoxStyles> = {
     },
 };
 
-function repoKey(repo: IRepoId) {
-    return `${repo.owner}/${repo.name}`;
-}
-
 async function getRepoOptions(git: IGitApi): Promise<IComboBoxOption[]> {
     const options: IComboBoxOption[] = [];
 
     const allRepos = await git.listRepos();
-    const groups = Object.entries(groupBy(allRepos, (r) => r.owner));
+    const groups = Object.entries(groupBy(allRepos, (r) => getRepoGroup(r)));
 
-    groups.sort(([ownerA], [ownerB]) => {
-        if (ownerA === git.login) {
+    groups.sort(([groupA], [groupB]) => {
+        if (groupA === git.login) {
             return -1;
         }
-        if (ownerB === git.login) {
+        if (groupB === git.login) {
             return 1;
         }
 
-        return ownerA.localeCompare(ownerB);
+        return groupA.localeCompare(groupB);
     });
 
-    for (const group of groups) {
-        const [owner, repos] = group;
+    for (const entry of groups) {
+        const [group, repos] = entry;
 
         if (groups.length > 1) {
             options.push({
-                key: owner,
+                key: group,
                 itemType: SelectableOptionMenuItemType.Header,
-                text: owner,
+                text: group,
             });
         }
 
-        repos.sort((a, b) => a.name.localeCompare(b.name));
+        repos.sort((a, b) => getRepoDisplayName(a).localeCompare(getRepoDisplayName(b)));
 
         for (const repo of repos) {
-            const text = repoKey(repo);
             options.push({
-                key: text,
-                text,
+                key: getRepoKey(repo),
+                text: getRepoDisplayName(repo),
                 data: repo,
             });
         }
@@ -76,12 +80,66 @@ async function getRepoOptions(git: IGitApi): Promise<IComboBoxOption[]> {
     return options;
 }
 
+enum State {
+    Default,
+    Cloning,
+    Done,
+    Error,
+}
+
+function getProgressDetails(state: State, progress?: GitProgressEvent) {
+    let percentComplete: number = 0;
+    let progressText: string = '';
+    if (state === State.Done) {
+        percentComplete = 100;
+        progressText = 'Done';
+    } else if (progress) {
+        percentComplete = (progress.loaded / progress.total) * 100;
+        progressText = progress.phase;
+    }
+
+    return { percentComplete, progressText };
+}
+
 export const CloneRepoPage: React.FunctionComponent = () => {
     const git = useGit();
-    const [repo, setRepo] = useState<IRepoId>();
+    const repos = useRepos();
+    const messageBar = useMessageBar();
+    const [repo, setRepo] = useState<RepoId>();
     const [branch, setBranch] = useState<string>();
+    const [state, setState] = useState(State.Default);
+    const [progress, setProgress] = useState<GitProgressEvent>();
 
     const repoOptions = useAsync(() => getRepoOptions(git), [git]);
+
+    const cloneRepo = useCallback(async () => {
+        if (!repo || !branch) {
+            return;
+        }
+
+        if (repos.exists(repo)) {
+            messageBar.info(
+                <span>
+                    This repo has already been cloned.{' '}
+                    <InternalLink href="/repo/current">View cloned repos</InternalLink>.
+                </span>,
+            );
+            return;
+        }
+
+        try {
+            setState(State.Cloning);
+            await cloneAndSelectRepo(repos, git, repo, branch, setProgress);
+            setState(State.Done);
+        } catch (error) {
+            setState(State.Error);
+            messageBar.error(error);
+        }
+    }, [repos, git, repo, branch, state, setState, setProgress]);
+
+    const { percentComplete, progressText } = useMemo(() => getProgressDetails(state, progress), [state, progress]);
+
+    const disabled = !repo || !branch || state === State.Cloning;
 
     return (
         <>
@@ -106,9 +164,9 @@ export const CloneRepoPage: React.FunctionComponent = () => {
                             openOnKeyboardFocus
                             options={repoOptions.value!}
                             styles={comboBoxStyles}
-                            selectedKey={repo ? repoKey(repo) : undefined}
+                            selectedKey={repo ? getRepoKey(repo) : undefined}
                             onChange={(ev, option) => {
-                                setRepo(option?.data as IRepoId);
+                                setRepo(option?.data as RepoId);
                             }}
                         />
                         <BranchSelect
@@ -122,8 +180,17 @@ export const CloneRepoPage: React.FunctionComponent = () => {
                     </>
                 )}
                 <Stack horizontal className={classNames.actions}>
-                    <PrimaryButton text="Clone repo" disabled={!repo || !branch} />
+                    <PrimaryButton text="Clone repo" disabled={disabled} onClick={cloneRepo} />
                 </Stack>
+
+                {state !== State.Default && (
+                    <ProgressIndicator
+                        className={classNames.progress}
+                        label={`Cloning ${repo && getRepoDisplayName(repo)}`}
+                        description={progressText}
+                        percentComplete={percentComplete}
+                    />
+                )}
             </Section>
         </>
     );

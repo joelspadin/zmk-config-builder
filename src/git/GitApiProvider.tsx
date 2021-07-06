@@ -23,6 +23,9 @@ async function getApi(auth: BaseAuthState): Promise<IGitApi | undefined> {
 
 export const GitApiContext = createContext<IGitApi | undefined>(undefined);
 
+// TODO: if we support other APIs aside from GitHub, we will need to dynamically
+// switch which one we're using based on the selected repo. Also will requre
+// storing authentication for multiple services at once.
 export const GitApiProvider: React.FunctionComponent = ({ children }) => {
     const messageBar = useMessageBar();
     const auth = useContext(AuthContext);

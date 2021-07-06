@@ -1,11 +1,11 @@
-import { IGitApi, IRepoId, RepoDetails } from './IGitApi';
+import { IGitApi, RepoDetails, RepoId } from './IGitApi';
 
 export class GitApiStub implements IGitApi {
     public readonly providerName = '';
     public readonly isAuthenticated = false;
     public readonly username = '';
 
-    async listRepos(): Promise<IRepoId[]> {
+    async listRepos(): Promise<RepoId[]> {
         return [];
     }
 

@@ -1,6 +1,9 @@
 import { Octokit } from '@octokit/rest';
+import * as git from 'isomorphic-git';
+import http from 'isomorphic-git/http/web';
+import { GIT_CORS_PROXY } from '../env';
 import { AuthGitHubToken } from './AuthProvider';
-import { IGitApi, IRepoId as RepoId, RepoDetails } from './IGitApi';
+import { getRepoDisplayName, IGitApi, RepoDetails, RepoId } from './IGitApi';
 
 interface OctokitRepo {
     name: string;
@@ -12,6 +15,7 @@ interface OctokitRepo {
 
 export interface GitHubApiOptions {
     isAuthenticated: boolean;
+    auth: AuthGitHubToken;
     login?: string;
     name?: string | null;
     avatarUrl?: string;
@@ -25,11 +29,15 @@ export class GitHubApi implements IGitApi {
     public readonly login: string;
     public readonly avatarUrl: string | undefined;
 
+    private readonly auth: AuthGitHubToken;
+
     constructor(private readonly octokit: Octokit, options: GitHubApiOptions) {
         this.isAuthenticated = options.isAuthenticated;
         this.username = options.name ?? '';
         this.login = options.login ?? '';
         this.avatarUrl = options.avatarUrl;
+
+        this.auth = options.auth;
     }
 
     async listRepos(): Promise<RepoId[]> {
@@ -57,17 +65,37 @@ export class GitHubApi implements IGitApi {
 
             return {
                 ...this.getRepoId(response.data),
+                cloneUrl: response.data.clone_url,
             };
         } catch {
             return undefined;
         }
     }
 
+    async cloneRepo(fs: git.PromiseFsClient, repo: RepoId, ref: string, onProgress?: git.ProgressCallback) {
+        const details = await this.getRepo(repo);
+
+        if (!details) {
+            throw Error(`Couldn't find repo ${getRepoDisplayName(repo)}`);
+        }
+
+        await git.clone({
+            fs,
+            http,
+            corsProxy: GIT_CORS_PROXY,
+            onAuth: () => this.onAuth(),
+            onProgress,
+            url: details.cloneUrl,
+            dir: '/',
+            ref,
+        });
+    }
+
     private getRepoId(details: OctokitRepo): RepoId {
         return {
+            type: 'github',
             name: details.name,
             owner: details.owner?.login ?? '',
-            url: details.clone_url,
         };
     }
 
@@ -78,9 +106,18 @@ export class GitHubApi implements IGitApi {
     private repoParams(repo: RepoId | string): { owner: string; repo: string } {
         if (typeof repo === 'string') {
             return { owner: this.login, repo };
-        } else {
+        }
+        if (repo.type === 'github') {
             return { owner: repo.owner, repo: repo.name };
         }
+        throw Error(`Can't look up repo of type ${repo.type} with GitHub API`);
+    }
+
+    private onAuth(): git.GitAuth {
+        return {
+            username: this.auth.token,
+            password: 'x-oauth-basic',
+        };
     }
 }
 
@@ -95,6 +132,7 @@ export async function createGitHubApi(auth: AuthGitHubToken): Promise<GitHubApi>
 
     return new GitHubApi(octokit, {
         isAuthenticated: true,
+        auth,
         login,
         name,
         avatarUrl: avatar_url,

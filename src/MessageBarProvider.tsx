@@ -1,11 +1,12 @@
 import { IMessageBarProps, MessageBar, MessageBarType } from '@fluentui/react';
 import React, { createContext, useCallback, useContext, useMemo, useState } from 'react';
 
+export type IMessageBarText = string | Error | JSX.Element;
+
 export type IMessageBarContent =
-    | JSX.Element
-    | Error
+    | IMessageBarText
     | {
-          text: string | JSX.Element;
+          text: IMessageBarText;
           actions?: JSX.Element;
       };
 
@@ -27,6 +28,26 @@ export interface IMessageBarProviderProps {
     className?: string;
 }
 
+function getText(content: IMessageBarContent): string | JSX.Element {
+    if (content instanceof Error) {
+        return content.message;
+    }
+
+    if (typeof content === 'object' && 'text' in content) {
+        return getText(content.text);
+    }
+
+    return content;
+}
+
+function getActions(content: IMessageBarContent): JSX.Element | undefined {
+    if (typeof content === 'object' && 'actions' in content) {
+        return content.actions;
+    }
+
+    return undefined;
+}
+
 export const MessageBarProvider: React.FunctionComponent<IMessageBarProviderProps> = ({ children, className }) => {
     const [show, setShow] = useState(false);
     const [props, setProps] = useState<IMessageBarProps>();
@@ -34,23 +55,12 @@ export const MessageBarProvider: React.FunctionComponent<IMessageBarProviderProp
 
     const messageFn = useCallback(
         (type: MessageBarType) => (content: IMessageBarContent) => {
-            const props: IMessageBarProps = {
-                messageBarType: type,
-            };
-
-            console.log(content);
-
-            if (content instanceof Error) {
-                setContent(content.message);
-            } else if (typeof content === 'object' && 'text' in content) {
-                setContent(content.text);
-                props.actions = content.actions;
-            } else {
-                setContent(content);
-            }
-
-            setProps(props);
             setShow(true);
+            setContent(getText(content));
+            setProps({
+                messageBarType: type,
+                actions: getActions(content),
+            });
         },
         [setShow, setContent, setProps],
     );

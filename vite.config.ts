@@ -10,6 +10,7 @@ export default defineConfig({
         // load the browser versions of these modules from a CDN.
         cdn('skypack', {
             '@octokit/rest': '^18.6.6',
+            'isomorphic-git': '^1.8.3',
         }),
     ],
 });

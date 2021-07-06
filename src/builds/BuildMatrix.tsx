@@ -173,7 +173,7 @@ export const BuildMatrix: React.FunctionComponent = () => {
                 layoutMode={DetailsListLayoutMode.justified}
                 selectionMode={SelectionMode.multiple}
                 selection={selection}
-                selectionPreservedOnEmptyClick={true}
+                selectionPreservedOnEmptyClick
                 onRenderRow={renderRow}
             />
             <AddKeyboardDialog isOpen={showAddDialog} onDismiss={setShowAddDialogFalse} onConfirm={addRows} />

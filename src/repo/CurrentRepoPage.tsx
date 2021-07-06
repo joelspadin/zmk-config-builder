@@ -1,12 +1,17 @@
 import { IComboBoxStyles, mergeStyleSets, PrimaryButton, Stack } from '@fluentui/react';
+import * as git from 'isomorphic-git';
 import React, { useState } from 'react';
-import { IRepoId } from '../git/IGitApi';
+import { useAsync } from 'react-use';
+import { getRepoDisplayName } from '../git/IGitApi';
+import { useCurrentRepo, useFs } from '../git/RepoProvider';
 import { InternalLink } from '../InternalLink';
-import { NotImplemented } from '../NotImplemented';
+import { useMessageBar } from '../MessageBarProvider';
 import { Section, SectionHeader } from '../Section';
+import { ControlShimmer } from '../shimmer';
 import { CONTROL_WIDTH } from '../styles';
 import { BranchSelect } from './BranchSelect';
 import { GraphView } from './GraphView';
+import { LocalRepoList } from './LocalRepoList';
 
 const classNames = mergeStyleSets({
     actions: {
@@ -21,17 +26,27 @@ const comboBoxStyles: Partial<IComboBoxStyles> = {
 };
 
 export const CurrentRepoPage: React.FunctionComponent = () => {
-    // const git = useGit();
-    //
-    // const repo: IRepoId = {
-    //     owner: git.login ?? '',
-    //     name: 'zmk-config',
-    //     url: `https://github.com/${git.login}/zmk-config`,
-    // };
-    let repo: IRepoId | undefined;
+    const repo = useCurrentRepo();
+    const fs = useFs();
+    const messageBar = useMessageBar();
 
-    const currentBranch = 'main';
-    const [branch, setBranch] = useState<string | undefined>(currentBranch);
+    const [branch, setBranch] = useState<string | undefined>();
+
+    const currentBranch = useAsync(async () => {
+        if (!fs) {
+            return undefined;
+        }
+
+        try {
+            const currentBranch = await git.currentBranch({ fs, dir: '/' });
+            setBranch(currentBranch ?? undefined);
+            return currentBranch;
+        } catch (error) {
+            messageBar.error(error);
+        }
+    }, [fs]);
+
+    const branchDisabled = !branch || currentBranch.loading || branch === currentBranch.value;
 
     return (
         <>
@@ -39,23 +54,23 @@ export const CurrentRepoPage: React.FunctionComponent = () => {
                 <Section>
                     <SectionHeader>Current repo</SectionHeader>
                     <p>
-                        Editing repo{' '}
-                        <strong>
-                            {repo.owner}/{repo.name}
-                        </strong>{' '}
-                        on branch <strong>{currentBranch}</strong>
+                        Editing repo <strong>{getRepoDisplayName(repo)}</strong>
                     </p>
 
-                    <BranchSelect
-                        repo={repo}
-                        label="Branch"
-                        value={branch}
-                        onChange={setBranch}
-                        styles={comboBoxStyles}
-                    />
+                    {currentBranch.loading ? (
+                        <ControlShimmer />
+                    ) : (
+                        <BranchSelect
+                            fs={fs}
+                            label="Branch"
+                            value={branch}
+                            onChange={setBranch}
+                            styles={comboBoxStyles}
+                        />
+                    )}
 
                     <Stack horizontal className={classNames.actions}>
-                        <PrimaryButton text="Change branch" disabled={!branch || branch === currentBranch} />
+                        <PrimaryButton text="Change branch" disabled={branchDisabled} />
                     </Stack>
                 </Section>
             ) : (
@@ -80,7 +95,7 @@ export const CurrentRepoPage: React.FunctionComponent = () => {
                     <InternalLink href="/repo/clone">clone it</InternalLink> or{' '}
                     <InternalLink href="/repo/create">create a new one</InternalLink>.
                 </p>
-                <NotImplemented />
+                <LocalRepoList />
             </Section>
 
             <GraphView />

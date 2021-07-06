@@ -6,7 +6,7 @@ const MagicString = require('magic-string').default
 const providers = {
   skypack: ['https://cdn.skypack.dev/'],
   'esm.run': ['https://cdn.jsdelivr.net/', 'npm/', '/+esm'],
-  jspm: ['https://jspm.dev/']
+  jspm: ['https://jspm.dev/'],
 }
 
 /**

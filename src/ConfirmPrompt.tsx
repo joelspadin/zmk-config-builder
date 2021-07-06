@@ -35,7 +35,7 @@ export const ConfirmPrompt: React.FunctionComponent<IConfirmPromptProps> = ({
         <Dialog dialogContentProps={dialogContent} hidden={hidden} onDismiss={onDismiss}>
             <DialogFooter>
                 <PrimaryButton text={confirmText ?? DefaultConfirmText} onClick={onConfirm} />
-                <DefaultButton text={dismissText ?? DefaultDismissText} onClick={onDismiss} />
+                <DefaultButton text={dismissText ?? DefaultDismissText} onClick={onDismiss} autoFocus />
             </DialogFooter>
         </Dialog>
     );
