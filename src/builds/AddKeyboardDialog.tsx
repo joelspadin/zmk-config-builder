@@ -1,32 +1,43 @@
 import {
-    classNamesFunction,
     DefaultButton,
+    DefaultFontStyles,
     DialogFooter,
     FontWeights,
     IModalProps,
     IStackProps,
     IStyle,
+    mergeStyleSets,
     Modal,
     PrimaryButton,
     Stack,
-    Theme,
-    useTheme,
 } from '@fluentui/react';
 import { useId } from '@fluentui/react-hooks';
 import React, { useCallback, useState } from 'react';
 import { IKeyboardComponent, KeyboardSelect } from '../KeyboardSelect';
 import { IBuildItem } from './BuildMatrixProvider';
 
-interface IDialogStyles {
-    root: IStyle;
-    header: IStyle;
-    content: IStyle;
-}
-
-const getClassNames = classNamesFunction<Theme, IDialogStyles>();
+const classNames = mergeStyleSets({
+    root: {
+        display: 'flex',
+        flexFlow: 'column nowrap',
+        alignItems: 'stretch',
+    } as IStyle,
+    header: [
+        DefaultFontStyles.xLarge,
+        {
+            fontWeight: FontWeights.semibold,
+            minHeight: 20,
+            padding: '16px 46px 20px 24px',
+        } as IStyle,
+    ],
+    content: {
+        padding: '0px 24px 24px',
+        minWidth: 348,
+    } as IStyle,
+});
 
 export interface IAddKeyboardDialogProps extends IModalProps {
-    onConfirm?: (items: IBuildItem[]) => any;
+    onConfirm?: (items: IBuildItem[]) => unknown;
 }
 
 const stackProps: Partial<IStackProps> = {
@@ -99,29 +110,6 @@ export const AddKeyboardDialog: React.FunctionComponent<IAddKeyboardDialogProps>
     const [mcuBoard, setMcuBoard] = useState<IKeyboardComponent | undefined>();
 
     const titleId = useId('title');
-    const theme = useTheme();
-
-    const classNames = getClassNames(() => {
-        return {
-            root: {
-                display: 'flex',
-                flexFlow: 'column nowrap',
-                alignItems: 'stretch',
-            },
-            header: [
-                theme.fonts.xLarge,
-                {
-                    fontWeight: FontWeights.semibold,
-                    minHeight: 20,
-                    padding: '16px 46px 20px 24px',
-                },
-            ],
-            content: {
-                padding: '0px 24px 24px',
-                minWidth: 348,
-            },
-        };
-    }, theme);
 
     const addKeyboard = useCallback(() => {
         if (!onConfirm) {
@@ -135,7 +123,7 @@ export const AddKeyboardDialog: React.FunctionComponent<IAddKeyboardDialogProps>
     const disabled = !mainBoard || (mainBoard.type === 'shield' && !mcuBoard);
 
     return (
-        <Modal topOffsetFixed {...props}>
+        <Modal topOffsetFixed titleAriaId={titleId} {...props}>
             <div id={titleId} className={classNames.header}>
                 Add keyboard
             </div>

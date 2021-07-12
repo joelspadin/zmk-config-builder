@@ -4,12 +4,12 @@ import {
     IComboBoxStyles,
     mergeStyleSets,
     PrimaryButton,
-    ProgressIndicator,
     SelectableOptionMenuItemType,
     Stack,
 } from '@fluentui/react';
 import { GitProgressEvent } from 'isomorphic-git';
 import React, { useCallback, useMemo, useState } from 'react';
+import { useHistory } from 'react-router-dom';
 import { useAsync } from 'react-use';
 import { cloneAndSelectRepo } from '../git/commands';
 import { useGitRemote } from '../git/GitRemoteProvider';
@@ -17,6 +17,7 @@ import { getRepoDisplayName, getRepoGroup, getRepoKey, IGitRemote, RepoId } from
 import { useRepos } from '../git/RepoProvider';
 import { InternalLink } from '../InternalLink';
 import { useMessageBar } from '../MessageBarProvider';
+import { ProgressModal } from '../ProgressModal';
 import { Section, SectionHeader } from '../Section';
 import { ControlShimmer } from '../shimmer';
 import { CONTROL_WIDTH } from '../styles';
@@ -90,24 +91,29 @@ enum State {
 function getProgressDetails(state: State, progress?: GitProgressEvent) {
     let percentComplete = 0;
     let progressText = '';
+    let complete = false;
+
     if (state === State.Done) {
         percentComplete = 100;
         progressText = 'Done';
+        complete = true;
     } else if (progress) {
         percentComplete = (progress.loaded / progress.total) * 100;
         progressText = progress.phase;
     }
 
-    return { percentComplete, progressText };
+    return { percentComplete, progressText, complete };
 }
 
 export const CloneRepoPage: React.FunctionComponent = () => {
     const repos = useRepos();
     const remote = useGitRemote();
+    const history = useHistory();
     const messageBar = useMessageBar();
     const [repo, setRepo] = useState<RepoId>();
     const [branch, setBranch] = useState<string>();
     const [state, setState] = useState(State.Default);
+    const [error, setError] = useState<string>();
     const [progress, setProgress] = useState<GitProgressEvent>();
 
     const repoOptions = useAsync(() => getRepoOptions(remote), [remote]);
@@ -133,13 +139,26 @@ export const CloneRepoPage: React.FunctionComponent = () => {
             setState(State.Done);
         } catch (error) {
             setState(State.Error);
-            messageBar.error(error);
+            setError(error.toString());
         }
     }, [repos, remote, repo, branch, state, setState, setProgress]);
 
-    const { percentComplete, progressText } = useMemo(() => getProgressDetails(state, progress), [state, progress]);
+    const onDismissModal = useCallback(() => {
+        if (state === State.Done) {
+            history.push('/repo/current');
+        } else {
+            setState(State.Default);
+            setProgress(undefined);
+        }
+    }, [history, state]);
 
-    const disabled = !repo || !branch || state === State.Cloning;
+    const { percentComplete, progressText, complete } = useMemo(
+        () => getProgressDetails(state, progress),
+        [state, progress],
+    );
+
+    const disabled = !repo || !branch;
+    const inProgress = state !== State.Default;
 
     return (
         <>
@@ -182,16 +201,17 @@ export const CloneRepoPage: React.FunctionComponent = () => {
                 <Stack horizontal className={classNames.actions}>
                     <PrimaryButton text="Clone repo" disabled={disabled} onClick={cloneRepo} />
                 </Stack>
-
-                {state !== State.Default && (
-                    <ProgressIndicator
-                        className={classNames.progress}
-                        label={`Cloning ${repo && getRepoDisplayName(repo)}`}
-                        description={progressText}
-                        percentComplete={percentComplete}
-                    />
-                )}
             </Section>
+
+            <ProgressModal
+                isOpen={inProgress}
+                isComplete={complete || !!error}
+                title={`Cloning ${repo && getRepoDisplayName(repo)}`}
+                progressLabel={progressText}
+                percentComplete={percentComplete}
+                errorText={error}
+                onDismiss={onDismissModal}
+            />
         </>
     );
 };

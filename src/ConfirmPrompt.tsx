@@ -7,8 +7,8 @@ export interface IConfirmPromptProps {
     message?: string;
     confirmText?: string;
     dismissText?: string;
-    onConfirm?: () => any;
-    onDismiss?: () => any;
+    onConfirm?: () => unknown;
+    onDismiss?: () => unknown;
 }
 
 const DefaultConfirmText = 'OK';
@@ -46,11 +46,11 @@ export interface IConfirmHookState<T> {
     hide: () => void;
 
     data?: T;
-    callback: (data: T) => any;
+    callback: (data?: T) => unknown;
     props: Partial<IConfirmPromptProps>;
 }
 
-export function useConfirmPrompt<T>(callback: (data: T) => any) {
+export function useConfirmPrompt<T>(callback: (data?: T) => unknown): IConfirmHookState<T> {
     const [data, setData] = useState<T | undefined>(undefined);
     const [hidden, setHidden] = useState(true);
 
@@ -71,7 +71,7 @@ export function useConfirmPrompt<T>(callback: (data: T) => any) {
         props: {
             hidden,
             onConfirm: () => {
-                callback(data!);
+                callback(data);
                 hide();
             },
             onDismiss: hide,

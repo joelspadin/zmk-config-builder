@@ -8,7 +8,8 @@ export async function cloneAndSelectRepo(
     repo: RepoId,
     ref: string,
     onProgress?: ProgressCallback,
-) {
-    const fs = state.setRepo(repo);
+): Promise<void> {
+    const fs = state.getFs(repo);
     await git.cloneRepo(fs, repo, ref, onProgress);
+    state.setRepo(repo);
 }

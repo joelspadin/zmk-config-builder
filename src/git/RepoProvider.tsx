@@ -5,7 +5,7 @@ import { useLocalStorageReducer } from '../hooks';
 import { getRepoDisplayName, getRepoKey, RepoId, repoIdEquals } from './IGitRemote';
 import { repoListReducer } from './RepoListReducer';
 
-export const REPO_DIR = 'repo';
+export const REPO_DIR = '/repo';
 
 export interface CurrentRepo {
     id: RepoId;
@@ -16,8 +16,8 @@ export interface RepoState {
     /** The active repo */
     current: CurrentRepo | undefined;
 
-    /** Changes the active repo and returns its filesystem */
-    setRepo(repo: RepoId): FS;
+    /** Changes the active repo */
+    setRepo(repo: RepoId): void;
     /** Gets the filesystem for a repo which may or may not be the active one */
     getFs(repo: RepoId): FS;
 
@@ -58,7 +58,9 @@ const stub: RepoState = {
 
     listRepos: () => [],
     exists: () => false,
-    deleteRepo: async () => {},
+    deleteRepo: async () => {
+        return;
+    },
 };
 
 export const RepoContext = createContext<RepoState>(stub);
@@ -84,7 +86,6 @@ export const RepoProvider: React.FunctionComponent = ({ children }) => {
             setRepo: (repo) => {
                 dispatch({ type: 'add', repo });
                 setCurrentRepo(repo);
-                return getFs(repo);
             },
             getFs: getFs,
 
@@ -104,15 +105,15 @@ export const RepoProvider: React.FunctionComponent = ({ children }) => {
     return <RepoContext.Provider value={state}>{children}</RepoContext.Provider>;
 };
 
-export function useRepos() {
+export function useRepos(): RepoState {
     return useContext(RepoContext);
 }
 
-export function useCurrentRepo() {
+export function useCurrentRepo(): RepoId | undefined {
     return useContext(RepoContext).current?.id;
 }
 
-export function useFs() {
+export function useFs(): { fs: FS | undefined; dir: string } {
     const fs = useContext(RepoContext).current?.fs;
     return { fs, dir: REPO_DIR };
 }
