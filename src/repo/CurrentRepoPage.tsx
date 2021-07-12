@@ -2,7 +2,7 @@ import { IComboBoxStyles, mergeStyleSets, PrimaryButton, Stack } from '@fluentui
 import * as git from 'isomorphic-git';
 import React, { useState } from 'react';
 import { useAsync } from 'react-use';
-import { getRepoDisplayName } from '../git/IGitApi';
+import { getRepoDisplayName } from '../git/IGitRemote';
 import { useCurrentRepo, useFs } from '../git/RepoProvider';
 import { InternalLink } from '../InternalLink';
 import { useMessageBar } from '../MessageBarProvider';

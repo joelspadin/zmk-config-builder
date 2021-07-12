@@ -19,7 +19,7 @@ import {
 import React, { HTMLAttributes, useCallback, useContext, useMemo, useRef, useState } from 'react';
 import { Link, useHistory } from 'react-router-dom';
 import { ExternalLink } from './ExternalLink';
-import { useAuth, useGit } from './git/GitApiProvider';
+import { useAuth, useGitRemote } from './git/GitRemoteProvider';
 import logoUrl from './logo.svg';
 import { mediaQuery } from './styles';
 import { DarkModeContext } from './ThemeProvider';
@@ -107,7 +107,7 @@ export const SiteHeader: React.FunctionComponent<HTMLAttributes<HTMLElement>> = 
     const history = useHistory();
     const theme = useTheme();
     const auth = useAuth();
-    const git = useGit();
+    const remote = useGitRemote();
 
     const onShowUserMenu = useCallback((ev: React.MouseEvent<HTMLElement>) => {
         ev.preventDefault();
@@ -129,7 +129,7 @@ export const SiteHeader: React.FunctionComponent<HTMLAttributes<HTMLElement>> = 
         () => [
             {
                 key: 'header',
-                text: `Signed in to ${git.providerName}`,
+                text: `Signed in to ${remote.providerName}`,
                 itemType: ContextualMenuItemType.Header,
             },
             {
@@ -141,16 +141,16 @@ export const SiteHeader: React.FunctionComponent<HTMLAttributes<HTMLElement>> = 
                 },
             },
         ],
-        [git],
+        [remote],
     );
 
     const persona = useMemo<IPersonaSharedProps>(() => {
         return {
-            text: git.username,
-            imageUrl: git.avatarUrl,
+            text: remote.username,
+            imageUrl: remote.avatarUrl,
             size: PersonaSize.size32,
         };
-    }, [git]);
+    }, [remote]);
 
     return (
         <header className={`${classNames.root} ${className ?? ''}`} {...props}>
@@ -191,7 +191,7 @@ export const SiteHeader: React.FunctionComponent<HTMLAttributes<HTMLElement>> = 
                         }}
                     />
                 </Stack.Item>
-                {git.isAuthenticated && (
+                {remote.isAuthenticated && (
                     // TODO: get GitHub name, show logout button
                     <Stack.Item>
                         <Persona {...persona} className={classNames.persona} ref={userRef} onClick={onShowUserMenu} />

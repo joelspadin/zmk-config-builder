@@ -44,7 +44,7 @@ export interface RepoDetails extends RepoId {
     readonly cloneUrl: string;
 }
 
-export interface IGitApi {
+export interface IGitRemote {
     readonly providerName: string;
     readonly isAuthenticated: boolean;
     readonly username: string;

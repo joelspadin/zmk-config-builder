@@ -1,6 +1,6 @@
-import { IGitApi, RepoDetails, RepoId } from './IGitApi';
+import { IGitRemote, RepoDetails, RepoId } from './IGitRemote';
 
-export class GitApiStub implements IGitApi {
+export class StubRemote implements IGitRemote {
     public readonly providerName = '';
     public readonly isAuthenticated = false;
     public readonly username = '';
@@ -19,5 +19,9 @@ export class GitApiStub implements IGitApi {
 
     async getRepo(): Promise<RepoDetails | undefined> {
         return undefined;
+    }
+
+    async cloneRepo(): Promise<void> {
+        throw new Error('Not implemented');
     }
 }

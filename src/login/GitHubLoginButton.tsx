@@ -2,7 +2,7 @@ import { DefaultButton, IButtonStyles, Spinner } from '@fluentui/react';
 import { oauthAuthorizationUrl } from '@octokit/oauth-authorization-url';
 import React, { useState } from 'react';
 import { GITHUB_CLIENT_ID, GITHUB_OAUTH_CLIENT, GITHUB_SCOPES } from '../env';
-import { useAuth } from '../git/GitApiProvider';
+import { useAuth } from '../git/GitRemoteProvider';
 import { useMessageBar } from '../MessageBarProvider';
 import { getDefaultPopupFeatures } from './popup';
 

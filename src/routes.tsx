@@ -4,7 +4,7 @@ import { BoardsPage } from './boards/BoardsPage';
 import { BuildsPage } from './builds/BuildsPage';
 import { CommitPage } from './commit/CommitPage';
 import { FilesPage } from './files/FilesPage';
-import { useAuth } from './git/GitApiProvider';
+import { useAuth } from './git/GitRemoteProvider';
 import { HomePage } from './home/HomePage';
 import { LoginPage } from './login/LoginPage';
 import { OAuthCallbackPage } from './login/OAuthCallbackPage';

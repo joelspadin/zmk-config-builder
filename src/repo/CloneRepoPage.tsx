@@ -12,8 +12,8 @@ import { GitProgressEvent } from 'isomorphic-git';
 import React, { useCallback, useMemo, useState } from 'react';
 import { useAsync } from 'react-use';
 import { cloneAndSelectRepo } from '../git/commands';
-import { useGit } from '../git/GitApiProvider';
-import { getRepoDisplayName, getRepoGroup, getRepoKey, IGitApi, RepoId } from '../git/IGitApi';
+import { useGitRemote } from '../git/GitRemoteProvider';
+import { getRepoDisplayName, getRepoGroup, getRepoKey, IGitRemote, RepoId } from '../git/IGitRemote';
 import { useRepos } from '../git/RepoProvider';
 import { InternalLink } from '../InternalLink';
 import { useMessageBar } from '../MessageBarProvider';
@@ -38,7 +38,7 @@ const comboBoxStyles: Partial<IComboBoxStyles> = {
     },
 };
 
-async function getRepoOptions(git: IGitApi): Promise<IComboBoxOption[]> {
+async function getRepoOptions(git: IGitRemote): Promise<IComboBoxOption[]> {
     const options: IComboBoxOption[] = [];
 
     const allRepos = await git.listRepos();
@@ -102,15 +102,15 @@ function getProgressDetails(state: State, progress?: GitProgressEvent) {
 }
 
 export const CloneRepoPage: React.FunctionComponent = () => {
-    const git = useGit();
     const repos = useRepos();
+    const remote = useGitRemote();
     const messageBar = useMessageBar();
     const [repo, setRepo] = useState<RepoId>();
     const [branch, setBranch] = useState<string>();
     const [state, setState] = useState(State.Default);
     const [progress, setProgress] = useState<GitProgressEvent>();
 
-    const repoOptions = useAsync(() => getRepoOptions(git), [git]);
+    const repoOptions = useAsync(() => getRepoOptions(remote), [remote]);
 
     const cloneRepo = useCallback(async () => {
         if (!repo || !branch) {
@@ -129,13 +129,13 @@ export const CloneRepoPage: React.FunctionComponent = () => {
 
         try {
             setState(State.Cloning);
-            await cloneAndSelectRepo(repos, git, repo, branch, setProgress);
+            await cloneAndSelectRepo(repos, remote, repo, branch, setProgress);
             setState(State.Done);
         } catch (error) {
             setState(State.Error);
             messageBar.error(error);
         }
-    }, [repos, git, repo, branch, state, setState, setProgress]);
+    }, [repos, remote, repo, branch, state, setState, setProgress]);
 
     const { percentComplete, progressText } = useMemo(() => getProgressDetails(state, progress), [state, progress]);
 

@@ -3,7 +3,7 @@ import React from 'react';
 import { BrowserRouter as Router } from 'react-router-dom';
 import './App.css';
 import { AuthProvider } from './git/AuthProvider';
-import { GitApiProvider } from './git/GitApiProvider';
+import { GitRemoteProvider } from './git/GitRemoteProvider';
 import { RepoProvider } from './git/RepoProvider';
 import { MessageBarProvider } from './MessageBarProvider';
 import { Routes } from './routes';
@@ -107,11 +107,11 @@ export const App: React.FunctionComponent = () => {
         <ThemeProvider>
             <RepoProvider>
                 <AuthProvider>
-                    <GitApiProvider>
+                    <GitRemoteProvider>
                         <Router>
                             <Content />
                         </Router>
-                    </GitApiProvider>
+                    </GitRemoteProvider>
                 </AuthProvider>
             </RepoProvider>
         </ThemeProvider>

@@ -3,7 +3,7 @@ import * as git from 'isomorphic-git';
 import http from 'isomorphic-git/http/web';
 import { GIT_CORS_PROXY } from '../env';
 import { AuthGitHubToken } from './AuthProvider';
-import { getRepoDisplayName, IGitApi, RepoDetails, RepoId } from './IGitApi';
+import { getRepoDisplayName, IGitRemote, RepoDetails, RepoId } from './IGitRemote';
 
 interface OctokitRepo {
     name: string;
@@ -13,7 +13,7 @@ interface OctokitRepo {
     } | null;
 }
 
-export interface GitHubApiOptions {
+export interface GitHubRemoteOptions {
     isAuthenticated: boolean;
     auth: AuthGitHubToken;
     login?: string;
@@ -21,7 +21,7 @@ export interface GitHubApiOptions {
     avatarUrl?: string;
 }
 
-export class GitHubApi implements IGitApi {
+export class GitHubRemote implements IGitRemote {
     public readonly providerName = 'GitHub';
 
     public readonly isAuthenticated: boolean;
@@ -31,7 +31,7 @@ export class GitHubApi implements IGitApi {
 
     private readonly auth: AuthGitHubToken;
 
-    constructor(private readonly octokit: Octokit, options: GitHubApiOptions) {
+    constructor(private readonly octokit: Octokit, options: GitHubRemoteOptions) {
         this.isAuthenticated = options.isAuthenticated;
         this.username = options.name ?? '';
         this.login = options.login ?? '';
@@ -121,7 +121,7 @@ export class GitHubApi implements IGitApi {
     }
 }
 
-export async function createGitHubApi(auth: AuthGitHubToken): Promise<GitHubApi> {
+export async function createGitHubApi(auth: AuthGitHubToken): Promise<GitHubRemote> {
     const octokit = new Octokit({
         auth: auth.token,
         userAgent: 'zmk-config-builder',
@@ -130,7 +130,7 @@ export async function createGitHubApi(auth: AuthGitHubToken): Promise<GitHubApi>
     const user = await octokit.rest.users.getAuthenticated();
     const { login, name, avatar_url } = user.data;
 
-    return new GitHubApi(octokit, {
+    return new GitHubRemote(octokit, {
         isAuthenticated: true,
         auth,
         login,

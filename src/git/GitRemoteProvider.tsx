@@ -2,13 +2,13 @@ import React, { createContext, useContext } from 'react';
 import { useAsync } from 'react-use';
 import { useMessageBar } from '../MessageBarProvider';
 import { AuthContext, AuthState, BaseAuthState } from './AuthProvider';
-import { GitApiStub } from './GitApiStub';
-import { createGitHubApi } from './GitHubApi';
-import { IGitApi } from './IGitApi';
+import { createGitHubApi } from './GitHubRemote';
+import { IGitRemote } from './IGitRemote';
+import { StubRemote } from './StubRemote';
 
-const stub = new GitApiStub();
+const stub = new StubRemote();
 
-async function getApi(auth: BaseAuthState): Promise<IGitApi | undefined> {
+async function getApi(auth: BaseAuthState): Promise<IGitRemote | undefined> {
     if (!auth.data) {
         return undefined;
     }
@@ -21,12 +21,12 @@ async function getApi(auth: BaseAuthState): Promise<IGitApi | undefined> {
     return undefined;
 }
 
-export const GitApiContext = createContext<IGitApi | undefined>(undefined);
+export const GitRemoteContext = createContext<IGitRemote | undefined>(undefined);
 
 // TODO: if we support other APIs aside from GitHub, we will need to dynamically
 // switch which one we're using based on the selected repo. Also will requre
 // storing authentication for multiple services at once.
-export const GitApiProvider: React.FunctionComponent = ({ children }) => {
+export const GitRemoteProvider: React.FunctionComponent = ({ children }) => {
     const messageBar = useMessageBar();
     const auth = useContext(AuthContext);
     const api = useAsync(async () => {
@@ -38,16 +38,16 @@ export const GitApiProvider: React.FunctionComponent = ({ children }) => {
         }
     }, [auth]);
 
-    return <GitApiContext.Provider value={api.value}>{children}</GitApiContext.Provider>;
+    return <GitRemoteContext.Provider value={api.value}>{children}</GitRemoteContext.Provider>;
 };
 
-export function useGit(): IGitApi {
-    return useContext(GitApiContext) ?? stub;
+export function useGitRemote(): IGitRemote {
+    return useContext(GitRemoteContext) ?? stub;
 }
 
 export function useAuth(): AuthState {
     const auth = useContext(AuthContext);
-    const git = useContext(GitApiContext);
+    const git = useContext(GitRemoteContext);
 
     return {
         isAuthenticating: auth.data !== undefined && git === undefined,

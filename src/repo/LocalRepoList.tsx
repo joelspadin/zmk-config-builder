@@ -16,7 +16,7 @@ import * as filesize from 'filesize';
 import React, { useCallback, useState } from 'react';
 import { useAsync } from 'react-use';
 import { ConfirmPrompt, useConfirmPrompt } from '../ConfirmPrompt';
-import { getRepoDisplayName, RepoId, repoIdEquals } from '../git/IGitApi';
+import { getRepoDisplayName, RepoId, repoIdEquals } from '../git/IGitRemote';
 import { useRepos } from '../git/RepoProvider';
 
 interface IRepoItem {

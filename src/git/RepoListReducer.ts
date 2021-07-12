@@ -1,5 +1,5 @@
 import React from 'react';
-import { getRepoDisplayName, RepoId, repoIdEquals } from './IGitApi';
+import { getRepoDisplayName, RepoId, repoIdEquals } from './IGitRemote';
 
 export interface RepoAddAction {
     type: 'add';

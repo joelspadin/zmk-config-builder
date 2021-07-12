@@ -2,7 +2,7 @@ import { mergeStyleSets, Stack } from '@fluentui/react';
 import React from 'react';
 import { Alert } from '../Alert';
 import { ExternalLink } from '../ExternalLink';
-import { useAuth } from '../git/GitApiProvider';
+import { useAuth } from '../git/GitRemoteProvider';
 import { InternalLink } from '../InternalLink';
 import { LoginSection } from '../login/LoginSection';
 import { PrivacyNotice } from '../login/PrivacyNotice';

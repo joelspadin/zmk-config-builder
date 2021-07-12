@@ -2,7 +2,7 @@ import FS from '@isomorphic-git/lightning-fs';
 import React, { createContext, useContext, useMemo } from 'react';
 import { useLocalStorage } from 'react-use';
 import { useLocalStorageReducer } from '../hooks';
-import { getRepoDisplayName, getRepoKey, RepoId, repoIdEquals } from './IGitApi';
+import { getRepoDisplayName, getRepoKey, RepoId, repoIdEquals } from './IGitRemote';
 import { repoListReducer } from './RepoListReducer';
 
 export interface CurrentRepo {

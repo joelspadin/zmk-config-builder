@@ -1,10 +1,10 @@
 import { ProgressCallback } from 'isomorphic-git';
-import { IGitApi, RepoId } from './IGitApi';
+import { IGitRemote, RepoId } from './IGitRemote';
 import { RepoState } from './RepoProvider';
 
 export async function cloneAndSelectRepo(
     state: RepoState,
-    git: IGitApi,
+    git: IGitRemote,
     repo: RepoId,
     ref: string,
     onProgress?: ProgressCallback,

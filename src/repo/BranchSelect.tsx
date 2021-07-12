@@ -3,10 +3,10 @@ import FS from '@isomorphic-git/lightning-fs';
 import * as git from 'isomorphic-git';
 import React from 'react';
 import { useAsync } from 'react-use';
-import { useGit } from '../git/GitApiProvider';
-import { IGitApi, RepoId } from '../git/IGitApi';
+import { useGitRemote } from '../git/GitRemoteProvider';
+import { IGitRemote, RepoId } from '../git/IGitRemote';
 
-function getBranchesFromGitApi(gitApi: IGitApi, repo?: RepoId) {
+function getBranchesFromGitApi(gitApi: IGitRemote, repo?: RepoId) {
     if (!repo) {
         return [];
     }
@@ -14,7 +14,7 @@ function getBranchesFromGitApi(gitApi: IGitApi, repo?: RepoId) {
     return gitApi.listBranches(repo);
 }
 
-function getDefaultBranchFromGitApi(gitApi: IGitApi, repo?: RepoId) {
+function getDefaultBranchFromGitApi(gitApi: IGitRemote, repo?: RepoId) {
     if (!repo) {
         return 'main';
     }
@@ -73,7 +73,7 @@ function compareBranches(defaultBranch: string | undefined, a: string, b: string
     return branchA.localeCompare(branchB);
 }
 
-async function getBranchOptions(gitOrFs: IGitApi | FS, repo?: RepoId) {
+async function getBranchOptions(gitOrFs: IGitRemote | FS, repo?: RepoId) {
     let defaultBranch: string | undefined;
     let currentBranch: string | undefined;
     let branches: string[];
@@ -135,10 +135,10 @@ export const BranchSelect: React.FunctionComponent<IBranchSelect> = ({
     onChange,
     styles,
 }) => {
-    const git = useGit();
+    const remote = useGitRemote();
 
     const options = useAsync(async () => {
-        const params: [IGitApi | FS, RepoId?] = fs ? [fs] : [git, repo];
+        const params: [IGitRemote | FS, RepoId?] = fs ? [fs] : [remote, repo];
         const { options, defaultBranch, currentBranch } = await getBranchOptions(...params);
 
         if (resetToDefault) {
@@ -147,7 +147,7 @@ export const BranchSelect: React.FunctionComponent<IBranchSelect> = ({
             onChange?.(currentBranch);
         }
         return options;
-    }, [git, repo, fs]);
+    }, [remote, repo, fs]);
 
     return (
         <ComboBox
