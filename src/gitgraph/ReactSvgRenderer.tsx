@@ -32,14 +32,36 @@ function getColor(config: GraphConfig, index: number) {
     return config.style.palette[index % config.style.palette.length];
 }
 
+function findLastIndex<T>(
+    array: readonly T[],
+    predicate: (value: T, index: number, obj: readonly T[]) => boolean,
+): number {
+    let i = array.length;
+    while (i--) {
+        if (predicate(array[i], i, array)) {
+            return i;
+        }
+    }
+    return -1;
+}
+
 function createPath(path: Path, key: number, config: GraphConfig, startRow: number, rowCount: number) {
     const control = config.grid.y * config.style.curveSmoothness;
     const stroke = getColor(config, path.pathIndex);
     const endRow = startRow + rowCount;
 
     let startVertex = path.vertices.findIndex((point) => point.y >= startRow && point.y < endRow);
+
     if (startVertex < 0) {
-        return;
+        // The path might span the entire range to render with no vertices inside.
+        // Check if there is a vertex
+        const beforeVertex = findLastIndex(path.vertices, (point) => point.y < startRow);
+        const spansRange = !path.isComplete || path.vertices.findIndex((point) => point.y >= endRow) >= 0;
+        if (beforeVertex < 0 || !spansRange) {
+            return null;
+        }
+
+        startVertex = beforeVertex;
     }
 
     startVertex = Math.max(0, startVertex - 1);
@@ -57,6 +79,12 @@ function createPath(path: Path, key: number, config: GraphConfig, startRow: numb
             d.push(`C${current.x},${current.y + control},${next.x},${next.y - control},${next.x},${next.y}`);
         }
 
+        if (i === path.vertices.length - 1 && !path.isComplete) {
+            const continued = getPosition({ x: next.x, y: endRow }, config);
+            d.push(`V${continued.y}`);
+            break;
+        }
+
         current = next;
         if (path.vertices[i].y >= endRow) {
             break;
@@ -66,7 +94,12 @@ function createPath(path: Path, key: number, config: GraphConfig, startRow: numb
     return <path key={key} fill="none" stroke={stroke} strokeWidth={config.style.lineWidth} d={d.join()} />;
 }
 
-function createNode(node: Node, key: number, config: GraphConfig) {
+function createNode(node: Node, key: number, config: GraphConfig, startRow: number, rowCount: number) {
+    const endRow = startRow + rowCount;
+    if (node.position.y < startRow || node.position.y >= endRow) {
+        return null;
+    }
+
     const { x, y } = getPosition(node.position, config);
     const r = config.style.nodeSize / 2;
     const fill = getColor(config, node.pathIndex);
@@ -88,7 +121,7 @@ export const ReactSvgRenderer: React.FunctionComponent<IReactSvgRendererProps> =
             {graph.paths.map((path, i, array) =>
                 createPath(array[array.length - i - 1], i, config, startRow, rowCount),
             )}
-            {graph.nodes.map((node, i) => createNode(node, i, config))}
+            {graph.nodes.map((node, i) => createNode(node, i, config, startRow, rowCount))}
         </svg>
     );
 };

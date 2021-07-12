@@ -11,9 +11,8 @@ import {
     useTheme,
 } from '@fluentui/react';
 import React, { useCallback, useMemo } from 'react';
-import { CanvasRenderer, GraphConfig } from './CanvasRenderer';
 import { Graph } from './graph';
-import { ReactSvgRenderer } from './ReactSvgRenderer';
+import { GraphConfig, ReactSvgRenderer } from './ReactSvgRenderer';
 import { Commit } from './types';
 
 export interface IGitGraphStyleProps {
@@ -26,6 +25,7 @@ export interface IGitGraphStyles {
     container: IStyle;
     page: IStyle;
     graph: IStyle;
+    graphViewport: IStyle;
     pageContent: IStyle;
     itemCell: IStyle;
     itemCellAlt: IStyle;
@@ -46,11 +46,12 @@ function isOdd(x: number) {
     return x % 2 === 1;
 }
 
+const MAX_GRAPH_COLUMNS = 10;
+
 export const GitGraph: React.FunctionComponent<IGitGraphProps> = ({ commits, graphConfig, styles }) => {
     const graph = useMemo(() => new Graph(commits), [commits]);
 
-    const graphWidth = graph.maxColumns * graphConfig.grid.x;
-    const renderer = useMemo(() => new CanvasRenderer(graphConfig), [graphConfig]);
+    const graphWidth = Math.min(graph.maxColumns, MAX_GRAPH_COLUMNS) * graphConfig.grid.x;
 
     const theme = useTheme();
     const classNames = getClassNames(
@@ -64,6 +65,7 @@ export const GitGraph: React.FunctionComponent<IGitGraphProps> = ({ commits, gra
                 paddingLeft: 5,
                 paddingRight: 5,
                 marginInlineEnd: 8,
+                whiteSpace: 'nowrap',
             };
 
             return mergeStyleSets(
@@ -75,10 +77,13 @@ export const GitGraph: React.FunctionComponent<IGitGraphProps> = ({ commits, gra
                     page: {
                         position: 'relative',
                     },
-                    graph: {
+                    graph: {},
+                    graphViewport: {
                         position: 'absolute',
                         top: 0,
                         left: 0,
+                        width: graphWidth,
+                        overflow: 'hidden',
                     },
                     itemCell: [
                         theme.fonts.medium,
@@ -86,6 +91,7 @@ export const GitGraph: React.FunctionComponent<IGitGraphProps> = ({ commits, gra
                             paddingLeft: graphWidth + graphConfig.grid.x,
                             height: graphConfig.grid.y,
                             lineHeight: graphConfig.grid.y,
+                            overflow: 'hidden',
                         },
                     ],
                     itemCellAlt: {
@@ -119,17 +125,19 @@ export const GitGraph: React.FunctionComponent<IGitGraphProps> = ({ commits, gra
             return (
                 <div key={pageProps.page.key} className={classNames.page}>
                     <div className={classNames.pageContent}>{defaultRender?.(pageProps)}</div>
-                    <ReactSvgRenderer
-                        className={classNames.graph}
-                        graph={graph}
-                        config={graphConfig}
-                        startRow={pageProps.page.startIndex}
-                        rowCount={pageProps.page.itemCount}
-                    />
+                    <div className={classNames.graphViewport}>
+                        <ReactSvgRenderer
+                            className={classNames.graph}
+                            graph={graph}
+                            config={graphConfig}
+                            startRow={pageProps.page.startIndex}
+                            rowCount={pageProps.page.itemCount}
+                        />
+                    </div>
                 </div>
             );
         },
-        [classNames, graph, renderer],
+        [classNames, graph],
     );
 
     const onRenderCell = useCallback(

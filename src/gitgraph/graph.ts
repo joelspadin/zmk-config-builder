@@ -8,6 +8,7 @@ export interface Point {
 export interface Path {
     vertices: Point[];
     pathIndex: number;
+    isComplete?: boolean;
 }
 
 export interface Node {
@@ -18,6 +19,7 @@ export interface Node {
 interface Lane {
     path: Path;
     nextCommit: string;
+    ended?: boolean;
 }
 
 export class Graph {
@@ -42,8 +44,7 @@ export class Graph {
     private _nodes: Node[] = [];
     private lanes: Lane[] = [];
     private nextPathIndex = 0;
-    private removeLaneIndex = -1;
-    private _maxColumns: number = 0;
+    private _maxColumns = 0;
 
     constructor(commits?: readonly Commit[]) {
         if (commits) {
@@ -51,13 +52,13 @@ export class Graph {
         }
     }
 
-    public addCommits(commits: readonly Commit[]) {
+    public addCommits(commits: readonly Commit[]): void {
         for (const commit of commits) {
             this.addCommit(commit);
         }
     }
 
-    public addCommit(commit: Commit) {
+    public addCommit(commit: Commit): void {
         let firstLane = -1;
         for (let i = 0; i < this.lanes.length; i++) {
             if (this.lanes[i].nextCommit === commit.hash) {
@@ -75,7 +76,7 @@ export class Graph {
         }
 
         this.updateLanePaths();
-        this.removeEndedLane();
+        this.removeEndedLanes();
 
         this._commits.push(commit);
     }
@@ -144,7 +145,8 @@ export class Graph {
         }
 
         if (commit.parents.length === 0 || isJoin) {
-            this.removeLaneIndex = laneIndex;
+            lane.ended = true;
+            lane.path.isComplete = true;
         } else {
             lane.nextCommit = commit.parents[0];
 
@@ -160,7 +162,7 @@ export class Graph {
 
         for (let x = 0; x < this.lanes.length; x++) {
             const lane = this.lanes[x];
-            let lastVertex = lane.path.vertices[lane.path.vertices.length - 1];
+            const lastVertex = lane.path.vertices[lane.path.vertices.length - 1];
 
             if (y > lastVertex.y && x !== lastVertex.x) {
                 this.addNodeIfShifting(lane, lastVertex.x, x, y);
@@ -171,11 +173,8 @@ export class Graph {
         }
     }
 
-    private removeEndedLane() {
-        if (this.removeLaneIndex >= 0) {
-            this.lanes.splice(this.removeLaneIndex, 1);
-            this.removeLaneIndex = -1;
-        }
+    private removeEndedLanes() {
+        this.lanes = this.lanes.filter((lane) => !lane.ended);
     }
 
     private addNodeIfShifting(lane: Lane, prevColumn: number, newColumn: number, newRow: number) {

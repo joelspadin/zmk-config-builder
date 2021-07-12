@@ -99,7 +99,7 @@ export const CurrentRepoPage: React.FunctionComponent = () => {
                 <LocalRepoList />
             </Section>
 
-            <GraphView />
+            <GraphView fs={fs} dir={dir} />
         </>
     );
 };
