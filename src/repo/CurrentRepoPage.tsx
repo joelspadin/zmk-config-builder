@@ -9,7 +9,7 @@ import { useMessageBar } from '../MessageBarProvider';
 import { Section, SectionHeader } from '../Section';
 import { ControlShimmer } from '../shimmer';
 import { CONTROL_WIDTH } from '../styles';
-import { BranchSelect } from './BranchSelect';
+import { LocalBranchSelect } from './BranchSelect';
 import { GraphView } from './GraphView';
 import { LocalRepoList } from './LocalRepoList';
 
@@ -27,7 +27,7 @@ const comboBoxStyles: Partial<IComboBoxStyles> = {
 
 export const CurrentRepoPage: React.FunctionComponent = () => {
     const repo = useCurrentRepo();
-    const fs = useFs();
+    const { fs, dir } = useFs();
     const messageBar = useMessageBar();
 
     const [branch, setBranch] = useState<string | undefined>();
@@ -38,13 +38,13 @@ export const CurrentRepoPage: React.FunctionComponent = () => {
         }
 
         try {
-            const currentBranch = await git.currentBranch({ fs, dir: '/' });
+            const currentBranch = await git.currentBranch({ fs, dir });
             setBranch(currentBranch ?? undefined);
             return currentBranch;
         } catch (error) {
             messageBar.error(error);
         }
-    }, [fs]);
+    }, [fs, dir]);
 
     const branchDisabled = !branch || currentBranch.loading || branch === currentBranch.value;
 
@@ -60,8 +60,9 @@ export const CurrentRepoPage: React.FunctionComponent = () => {
                     {currentBranch.loading ? (
                         <ControlShimmer />
                     ) : (
-                        <BranchSelect
+                        <LocalBranchSelect
                             fs={fs}
+                            dir={dir}
                             label="Branch"
                             value={branch}
                             onChange={setBranch}

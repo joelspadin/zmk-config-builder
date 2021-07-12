@@ -4,6 +4,7 @@ import http from 'isomorphic-git/http/web';
 import { GIT_CORS_PROXY } from '../env';
 import { AuthGitHubToken } from './AuthProvider';
 import { getRepoDisplayName, IGitRemote, RepoDetails, RepoId } from './IGitRemote';
+import { REPO_DIR } from './RepoProvider';
 
 interface OctokitRepo {
     name: string;
@@ -86,7 +87,7 @@ export class GitHubRemote implements IGitRemote {
             onAuth: () => this.onAuth(),
             onProgress,
             url: details.cloneUrl,
-            dir: '/',
+            dir: REPO_DIR,
             ref,
         });
     }

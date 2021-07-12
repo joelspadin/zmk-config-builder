@@ -5,6 +5,8 @@ import { useLocalStorageReducer } from '../hooks';
 import { getRepoDisplayName, getRepoKey, RepoId, repoIdEquals } from './IGitRemote';
 import { repoListReducer } from './RepoListReducer';
 
+export const REPO_DIR = 'repo';
+
 export interface CurrentRepo {
     id: RepoId;
     fs: FS;
@@ -111,5 +113,6 @@ export function useCurrentRepo() {
 }
 
 export function useFs() {
-    return useContext(RepoContext).current?.fs;
+    const fs = useContext(RepoContext).current?.fs;
+    return { fs, dir: REPO_DIR };
 }

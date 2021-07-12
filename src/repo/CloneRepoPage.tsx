@@ -21,7 +21,7 @@ import { Section, SectionHeader } from '../Section';
 import { ControlShimmer } from '../shimmer';
 import { CONTROL_WIDTH } from '../styles';
 import { groupBy } from '../util';
-import { BranchSelect } from './BranchSelect';
+import { RemoteBranchSelect } from './BranchSelect';
 
 const classNames = mergeStyleSets({
     actions: {
@@ -88,8 +88,8 @@ enum State {
 }
 
 function getProgressDetails(state: State, progress?: GitProgressEvent) {
-    let percentComplete: number = 0;
-    let progressText: string = '';
+    let percentComplete = 0;
+    let progressText = '';
     if (state === State.Done) {
         percentComplete = 100;
         progressText = 'Done';
@@ -149,12 +149,7 @@ export const CloneRepoPage: React.FunctionComponent = () => {
                     Select your ZMK config repo and clone it to make a copy of it in your browser that ZMK Config
                     Builder can edit.
                 </p>
-                {repoOptions.loading ? (
-                    <>
-                        <ControlShimmer />
-                        <ControlShimmer />
-                    </>
-                ) : (
+                {repoOptions.value ? (
                     <>
                         <ComboBox
                             label="Repository"
@@ -162,14 +157,14 @@ export const CloneRepoPage: React.FunctionComponent = () => {
                             autoComplete="on"
                             useComboBoxAsMenuWidth
                             openOnKeyboardFocus
-                            options={repoOptions.value!}
+                            options={repoOptions.value}
                             styles={comboBoxStyles}
                             selectedKey={repo ? getRepoKey(repo) : undefined}
                             onChange={(ev, option) => {
                                 setRepo(option?.data as RepoId);
                             }}
                         />
-                        <BranchSelect
+                        <RemoteBranchSelect
                             label="Branch"
                             repo={repo}
                             value={branch}
@@ -177,6 +172,11 @@ export const CloneRepoPage: React.FunctionComponent = () => {
                             styles={comboBoxStyles}
                             resetToDefault
                         />
+                    </>
+                ) : (
+                    <>
+                        <ControlShimmer />
+                        <ControlShimmer />
                     </>
                 )}
                 <Stack horizontal className={classNames.actions}>

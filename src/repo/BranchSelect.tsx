@@ -1,7 +1,7 @@
 import { ComboBox, DropdownMenuItemType, IComboBoxOption, IComboBoxStyles } from '@fluentui/react';
 import FS from '@isomorphic-git/lightning-fs';
 import * as git from 'isomorphic-git';
-import React from 'react';
+import React, { useEffect } from 'react';
 import { useAsync } from 'react-use';
 import { useGitRemote } from '../git/GitRemoteProvider';
 import { IGitRemote, RepoId } from '../git/IGitRemote';
@@ -22,19 +22,19 @@ function getDefaultBranchFromGitApi(gitApi: IGitRemote, repo?: RepoId) {
     return gitApi.getDefaultBranch(repo);
 }
 
-async function getCurrentBranchFromFs(fs: FS) {
-    const branch = await git.currentBranch({ fs, dir: '/' });
+async function getCurrentBranchFromFs(fs: FS, dir: string) {
+    const branch = await git.currentBranch({ fs, dir });
     return branch ?? undefined;
 }
 
-async function getBranchesFromFs(fs: FS) {
+async function getBranchesFromFs(fs: FS, dir: string) {
     // TODO: list local and remote branches?
-    const localBranches = await git.listBranches({ fs, dir: '/' });
-    const remotes = await git.listRemotes({ fs, dir: '/' });
+    const localBranches = await git.listBranches({ fs, dir });
+    const remotes = await git.listRemotes({ fs, dir });
     const remoteBranches: string[] = [];
 
     for (const remote of remotes) {
-        const branches = await git.listBranches({ fs, dir: '/', remote: remote.remote });
+        const branches = await git.listBranches({ fs, dir, remote: remote.remote });
         remoteBranches.push(...branches.filter((b) => b !== 'HEAD').map((b) => `${remote.remote}/${b}`));
     }
 
@@ -46,7 +46,7 @@ function getDefaultBranchFromFs(branches: string[]) {
 }
 
 function splitBranch(branch: string): [string, string] {
-    let [remote, name] = branch.split('/');
+    const [remote, name] = branch.split('/');
 
     if (name) {
         return [remote, name];
@@ -73,20 +73,36 @@ function compareBranches(defaultBranch: string | undefined, a: string, b: string
     return branchA.localeCompare(branchB);
 }
 
-async function getBranchOptions(gitOrFs: IGitRemote | FS, repo?: RepoId) {
+interface BranchOptions {
+    options: IComboBoxOption[];
+    defaultBranch: string | undefined;
+    currentBranch: string | undefined;
+}
+
+async function getBranchOptions(remote: IGitRemote, repo: RepoId): Promise<BranchOptions>;
+async function getBranchOptions(fs: FS, dir: string): Promise<BranchOptions>;
+async function getBranchOptions(remoteOrFs: IGitRemote | FS, repoOrDir: RepoId | string): Promise<BranchOptions> {
     let defaultBranch: string | undefined;
     let currentBranch: string | undefined;
     let branches: string[];
 
-    if (gitOrFs instanceof FS) {
-        const fs = gitOrFs;
-        branches = await getBranchesFromFs(fs);
-        currentBranch = await getCurrentBranchFromFs(fs);
-        defaultBranch = getDefaultBranchFromFs(branches);
+    if (remoteOrFs instanceof FS) {
+        if (typeof repoOrDir === 'string') {
+            const fs = remoteOrFs;
+            const dir = repoOrDir;
+            branches = await getBranchesFromFs(fs, dir);
+            currentBranch = await getCurrentBranchFromFs(fs, dir);
+            defaultBranch = getDefaultBranchFromFs(branches);
+        } else {
+            throw new Error('Invalid arguments');
+        }
+    } else if (typeof repoOrDir === 'object') {
+        const remote = remoteOrFs;
+        const repo = repoOrDir;
+        defaultBranch = await getDefaultBranchFromGitApi(remote, repo);
+        branches = await getBranchesFromGitApi(remote, repo);
     } else {
-        const gitApi = gitOrFs;
-        defaultBranch = await getDefaultBranchFromGitApi(gitApi, repo);
-        branches = await getBranchesFromGitApi(gitApi, repo);
+        throw new Error('Inavlid arguments');
     }
 
     branches.sort((a, b) => compareBranches(defaultBranch, a, b));
@@ -121,33 +137,35 @@ export interface IBranchSelect {
     value?: string;
     resetToDefault?: boolean;
     resetToCurrent?: boolean;
-    onChange?: (value: string | undefined) => any;
+    onChange?: (value: string | undefined) => unknown;
     styles?: Partial<IComboBoxStyles>;
 }
 
-export const BranchSelect: React.FunctionComponent<IBranchSelect> = ({
+interface ICommonBranchSelect extends IBranchSelect {
+    options?: IComboBoxOption[];
+    defaultBranch?: string;
+    currentBranch?: string;
+}
+
+const CommonBranchSelect: React.FunctionComponent<ICommonBranchSelect> = ({
     label,
-    repo,
-    fs,
-    value,
+    options,
+    defaultBranch,
+    currentBranch,
     resetToDefault,
     resetToCurrent,
+    value,
     onChange,
     styles,
 }) => {
-    const remote = useGitRemote();
-
-    const options = useAsync(async () => {
-        const params: [IGitRemote | FS, RepoId?] = fs ? [fs] : [remote, repo];
-        const { options, defaultBranch, currentBranch } = await getBranchOptions(...params);
-
-        if (resetToDefault) {
+    useEffect(() => {
+        if (defaultBranch && resetToDefault) {
             onChange?.(defaultBranch);
-        } else if (resetToCurrent) {
+        }
+        if (currentBranch && resetToCurrent) {
             onChange?.(currentBranch);
         }
-        return options;
-    }, [remote, repo, fs]);
+    }, [defaultBranch, currentBranch, resetToDefault, resetToCurrent]);
 
     return (
         <ComboBox
@@ -156,7 +174,7 @@ export const BranchSelect: React.FunctionComponent<IBranchSelect> = ({
             autoComplete="on"
             useComboBoxAsMenuWidth
             openOnKeyboardFocus
-            options={options.value ?? []}
+            options={options ?? []}
             styles={styles}
             selectedKey={value}
             onChange={(ev, option) => {
@@ -164,4 +182,39 @@ export const BranchSelect: React.FunctionComponent<IBranchSelect> = ({
             }}
         />
     );
+};
+
+export interface IRemoteBranchSelect extends IBranchSelect {
+    repo?: RepoId;
+}
+
+export const RemoteBranchSelect: React.FunctionComponent<IRemoteBranchSelect> = ({ repo, ...props }) => {
+    const remote = useGitRemote();
+
+    const options = useAsync(async () => {
+        if (!repo) {
+            return { options: [] };
+        }
+
+        return await getBranchOptions(remote, repo);
+    }, [remote, repo]);
+
+    return <CommonBranchSelect {...options.value} {...props} />;
+};
+
+export interface ILocalBranchSelect extends IBranchSelect {
+    fs?: FS;
+    dir: string;
+}
+
+export const LocalBranchSelect: React.FunctionComponent<ILocalBranchSelect> = ({ fs, dir, ...props }) => {
+    const options = useAsync(async () => {
+        if (!fs) {
+            return { options: [] };
+        }
+
+        return await getBranchOptions(fs, dir);
+    }, [fs, dir]);
+
+    return <CommonBranchSelect {...options.value} {...props} />;
 };
