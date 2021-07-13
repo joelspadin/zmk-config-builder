@@ -47,6 +47,7 @@ export const GraphView: React.FunctionComponent<IGraphViewProps> = ({ fs, dir })
                     theme.palette.orange,
                     theme.palette.magentaLight,
                 ],
+                notCurrentColor: theme.palette.neutralTertiaryAlt,
                 lineWidth: 4,
                 nodeSize: 12,
                 curveSmoothness: 0.5,

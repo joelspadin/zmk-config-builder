@@ -14,12 +14,14 @@ function mapAppend<K, V>(map: Map<K, V[]>, key: K, value: V) {
 
 interface HeadState {
     head: git.ReadCommitResult;
+    isCurrent: boolean;
 }
 
 export class HistoryProvider {
     public static readonly DEFAULT_PAGE_SIZE = 40;
 
     private initialized = false;
+    private currentCommit: string | undefined;
     private commits = new Map<string, git.ReadCommitResult>();
     private heads: HeadState[] = [];
     private branches = new Map<string, string[]>();
@@ -61,6 +63,10 @@ export class HistoryProvider {
             return await this.getNextCommit();
         }
 
+        if (head.head.oid === this.currentCommit) {
+            head.isCurrent = true;
+        }
+
         this.commits.set(head.head.oid, head.head);
         const commit: Commit = {
             hash: head.head.oid,
@@ -69,6 +75,7 @@ export class HistoryProvider {
             author: head.head.commit.author.name,
             branches: this.branches.get(head.head.oid),
             tags: this.tags.get(head.head.oid),
+            isCurrent: head.isCurrent,
         };
 
         if (head.head.commit.parent.length === 0) {
@@ -81,9 +88,9 @@ export class HistoryProvider {
             const parent = await git.log({ ...this.props, ref, depth: 1 });
 
             if (i === 0) {
-                head.head = parent[0];
+                this.updateHead(head, parent[0]);
             } else {
-                this.addHead(parent[0]);
+                this.addHead(parent[0], head.isCurrent);
             }
         }
 
@@ -101,9 +108,9 @@ export class HistoryProvider {
             return;
         }
 
+        await this.loadCurrentCommit();
         await this.loadBranches();
         await this.loadTags();
-        await this.loadCurrentHead();
 
         this.sortHeads();
         this.initialized = true;
@@ -140,17 +147,28 @@ export class HistoryProvider {
         }
     }
 
-    private async loadCurrentHead() {
+    private async loadCurrentCommit() {
         const head = await git.log({ ...this.props, depth: 1 });
-        this.addHead(head[0]);
+        this.currentCommit = head[0].oid;
+        this.addHead(head[0], true);
     }
 
-    private addHead(commit: git.ReadCommitResult) {
-        if (this.heads.some((x) => x.head.oid === commit.oid)) {
+    private addHead(commit: git.ReadCommitResult, isCurrent = false) {
+        const existing = this.heads.filter((x) => x.head.oid === commit.oid);
+        if (existing.length > 0) {
+            existing.forEach((head) => (head.isCurrent = true));
             return;
         }
 
-        this.heads.push({ head: commit });
+        this.heads.push({ head: commit, isCurrent });
+    }
+
+    private updateHead(head: HeadState, commit: git.ReadCommitResult) {
+        if (this.heads.some((x) => x.isCurrent && x.head.oid === commit.oid)) {
+            head.isCurrent = true;
+        }
+
+        head.head = commit;
     }
 
     private sortHeads() {

@@ -32,6 +32,7 @@ export interface IGitGraphStyles {
     branch: IStyle;
     tag: IStyle;
     message: IStyle;
+    messageAlt: IStyle;
 }
 
 export interface IGitGraphProps {
@@ -91,7 +92,9 @@ export const GitGraph: React.FunctionComponent<IGitGraphProps> = ({ commits, gra
                             paddingLeft: graphWidth + graphConfig.grid.x,
                             height: graphConfig.grid.y,
                             lineHeight: graphConfig.grid.y,
+                            whiteSpace: 'nowrap',
                             overflow: 'hidden',
+                            textOverflow: 'ellipsis',
                         },
                     ],
                     itemCellAlt: {
@@ -109,6 +112,10 @@ export const GitGraph: React.FunctionComponent<IGitGraphProps> = ({ commits, gra
                             borderColor: theme.palette.green,
                         },
                     ],
+                    message: {},
+                    messageAlt: {
+                        color: theme.palette.blackTranslucent40,
+                    },
                 },
                 styles,
             );
@@ -164,7 +171,9 @@ export const GitGraph: React.FunctionComponent<IGitGraphProps> = ({ commits, gra
                             {tag}
                         </span>
                     ))}
-                    <span className={classNames.message}>{item.message}</span>
+                    <span className={`${classNames.message} ${item.isCurrent ? '' : classNames.messageAlt}`}>
+                        {item.message}
+                    </span>
                 </div>
             );
         },

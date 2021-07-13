@@ -4,6 +4,7 @@ import { GraphGrid } from './types';
 
 export interface GraphStyle {
     readonly palette: readonly string[];
+    readonly notCurrentColor: string;
     readonly nodeSize: number;
     readonly lineWidth: number;
     readonly curveSmoothness: number;
@@ -28,7 +29,11 @@ function getPosition(point: Point, config: GraphConfig): Point {
     };
 }
 
-function getColor(config: GraphConfig, index: number) {
+function getColor(config: GraphConfig, index: number, isCurrent: boolean) {
+    if (!isCurrent) {
+        return config.style.notCurrentColor;
+    }
+
     return config.style.palette[index % config.style.palette.length];
 }
 
@@ -47,7 +52,7 @@ function findLastIndex<T>(
 
 function createPath(path: Path, key: number, config: GraphConfig, startRow: number, rowCount: number) {
     const control = config.grid.y * config.style.curveSmoothness;
-    const stroke = getColor(config, path.pathIndex);
+    const stroke = getColor(config, path.pathIndex, path.isCurrent);
     const endRow = startRow + rowCount;
 
     let startVertex = path.vertices.findIndex((point) => point.y >= startRow && point.y < endRow);
@@ -91,6 +96,10 @@ function createPath(path: Path, key: number, config: GraphConfig, startRow: numb
         }
     }
 
+    if (d.length === 1) {
+        return null;
+    }
+
     return <path key={key} fill="none" stroke={stroke} strokeWidth={config.style.lineWidth} d={d.join()} />;
 }
 
@@ -102,7 +111,7 @@ function createNode(node: Node, key: number, config: GraphConfig, startRow: numb
 
     const { x, y } = getPosition(node.position, config);
     const r = config.style.nodeSize / 2;
-    const fill = getColor(config, node.pathIndex);
+    const fill = getColor(config, node.pathIndex, node.isCurrent);
 
     return <circle key={key} cx={x} cy={y} r={r} fill={fill} />;
 }

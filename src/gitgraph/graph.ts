@@ -8,12 +8,14 @@ export interface Point {
 export interface Path {
     vertices: Point[];
     pathIndex: number;
+    isCurrent: boolean;
     isComplete?: boolean;
 }
 
 export interface Node {
     position: Point;
     pathIndex: number;
+    isCurrent: boolean;
 }
 
 interface Lane {
@@ -85,12 +87,13 @@ export class Graph {
         this._maxColumns = Math.max(this._maxColumns, point.x + 1);
     }
 
-    private createLane(nextCommit: string, pathIndex: number, startPosition: Point) {
+    private createLane(nextCommit: string, isCurrent: boolean, pathIndex: number, startPosition: Point) {
         const lane: Lane = {
             nextCommit,
             path: {
                 pathIndex,
                 vertices: [startPosition],
+                isCurrent,
             },
         };
         this.lanes.push(lane);
@@ -101,13 +104,26 @@ export class Graph {
         return lane;
     }
 
+    private setLaneIsCurrent(lane: Lane, isCurrent: boolean) {
+        lane.path.isComplete = true;
+
+        const oldPath = lane.path;
+        lane.path = {
+            vertices: oldPath.vertices.slice(-1),
+            pathIndex: oldPath.pathIndex,
+            isCurrent,
+        };
+
+        this._paths.push(lane.path);
+    }
+
     private addCommitToNextLane(commit: Commit) {
         const position = {
             x: this.lanes.length,
             y: this.commits.length,
         };
 
-        this._nodes.push({ position, pathIndex: this.nextPathIndex });
+        this._nodes.push({ position, isCurrent: commit.isCurrent, pathIndex: this.nextPathIndex });
         this.updateMaxColumns(position);
 
         if (commit.parents.length === 0) {
@@ -116,7 +132,7 @@ export class Graph {
         }
 
         for (const parent of commit.parents) {
-            this.createLane(parent, this.nextPathIndex, position);
+            this.createLane(parent, commit.isCurrent, this.nextPathIndex, position);
             this.nextPathIndex++;
         }
     }
@@ -138,10 +154,15 @@ export class Graph {
         }
 
         lane.path.vertices.push(position);
+
+        if (commit.isCurrent !== lane.path.isCurrent) {
+            this.setLaneIsCurrent(lane, commit.isCurrent);
+        }
+
         this.updateMaxColumns(position);
 
         if (!isJoin) {
-            this._nodes.push({ position, pathIndex: lane.path.pathIndex });
+            this._nodes.push({ position, isCurrent: commit.isCurrent, pathIndex: lane.path.pathIndex });
         }
 
         if (commit.parents.length === 0 || isJoin) {
@@ -151,7 +172,7 @@ export class Graph {
             lane.nextCommit = commit.parents[0];
 
             for (const parent of commit.parents.slice(1)) {
-                this.createLane(parent, this.nextPathIndex, position);
+                this.createLane(parent, commit.isCurrent, this.nextPathIndex, position);
                 this.nextPathIndex++;
             }
         }

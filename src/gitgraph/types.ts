@@ -2,6 +2,7 @@ export interface Commit {
     readonly hash: string;
     readonly message: string;
     readonly parents: readonly string[];
+    readonly isCurrent: boolean;
     readonly author?: string;
     readonly branches?: readonly string[];
     readonly tags?: readonly string[];
