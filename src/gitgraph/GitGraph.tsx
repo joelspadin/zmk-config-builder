@@ -2,7 +2,10 @@ import {
     classNamesFunction,
     FocusZone,
     FocusZoneDirection,
+    HoverCard,
+    HoverCardType,
     IPageProps,
+    IPlainCardProps,
     IRenderFunction,
     IStyle,
     ITheme,
@@ -10,7 +13,9 @@ import {
     mergeStyleSets,
     useTheme,
 } from '@fluentui/react';
+import dateFormat from 'dateformat';
 import React, { useCallback, useMemo } from 'react';
+import ReactMarkdown from 'react-markdown';
 import { Graph } from './graph';
 import { GraphConfig, ReactSvgRenderer } from './ReactSvgRenderer';
 import { Commit } from './types';
@@ -33,6 +38,7 @@ export interface IGitGraphStyles {
     tag: IStyle;
     message: IStyle;
     messageAlt: IStyle;
+    card: IStyle;
 }
 
 export interface IGitGraphProps {
@@ -112,10 +118,16 @@ export const GitGraph: React.FunctionComponent<IGitGraphProps> = ({ commits, gra
                             borderColor: theme.palette.green,
                         },
                     ],
-                    message: {},
+                    message: {
+                        display: 'inline',
+                    },
                     messageAlt: {
                         color: theme.palette.blackTranslucent40,
                     },
+                    card: {
+                        padding: '16px 24px',
+                        color: theme.palette.black,
+                    } as IStyle,
                 },
                 styles,
             );
@@ -147,6 +159,27 @@ export const GitGraph: React.FunctionComponent<IGitGraphProps> = ({ commits, gra
         [classNames, graph],
     );
 
+    const onRenderCard = useCallback(
+        (item: Commit) => {
+            return (
+                <div className={classNames.card}>
+                    <div>
+                        <strong>Author:</strong> {item.author.name}{' '}
+                        <a href={`mailto:${item.author.email}`}>&lt;{item.author.email}&gt;</a>
+                    </div>
+                    <div>
+                        <strong>Authored on:</strong> {dateFormat(item.author.timestamp * 1000)}
+                    </div>
+                    <div>
+                        <strong>Committed on:</strong> {dateFormat(item.committer.timestamp * 1000)}
+                    </div>
+                    <ReactMarkdown>{item.message}</ReactMarkdown>
+                </div>
+            );
+        },
+        [classNames],
+    );
+
     const onRenderCell = useCallback(
         (item?: Commit, index?: number): JSX.Element => {
             if (!item) {
@@ -155,12 +188,18 @@ export const GitGraph: React.FunctionComponent<IGitGraphProps> = ({ commits, gra
 
             index = index ?? 0;
 
+            const brief = item.message.split('\n')[0];
+
+            const cellClassName = `${classNames.itemCell} ${isOdd(index) ? classNames.itemCellAlt : ''}`;
+            const messageClassName = `${classNames.message} ${item.isCurrent ? '' : classNames.messageAlt}`;
+
+            const expandingCardProps: IPlainCardProps = {
+                onRenderPlainCard: onRenderCard,
+                renderData: item,
+            };
+
             return (
-                <div
-                    key={index}
-                    className={`${classNames.itemCell} ${isOdd(index) ? classNames.itemCellAlt : ''}`}
-                    data-is-focusable={true}
-                >
+                <div key={index} className={cellClassName} data-is-focusable={true}>
                     {item.branches?.map((branch, i) => (
                         <span key={i} className={classNames.branch}>
                             {branch}
@@ -171,9 +210,14 @@ export const GitGraph: React.FunctionComponent<IGitGraphProps> = ({ commits, gra
                             {tag}
                         </span>
                     ))}
-                    <span className={`${classNames.message} ${item.isCurrent ? '' : classNames.messageAlt}`}>
-                        {item.message}
-                    </span>
+                    <HoverCard
+                        className={messageClassName}
+                        type={HoverCardType.plain}
+                        plainCardProps={expandingCardProps}
+                        instantOpenOnClick
+                    >
+                        {brief}
+                    </HoverCard>
                 </div>
             );
         },

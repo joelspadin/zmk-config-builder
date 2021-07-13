@@ -1,9 +1,16 @@
+export interface Author {
+    name: string;
+    email: string;
+    timestamp: number;
+}
+
 export interface Commit {
     readonly hash: string;
     readonly message: string;
     readonly parents: readonly string[];
     readonly isCurrent: boolean;
-    readonly author?: string;
+    readonly author: Author;
+    readonly committer: Author;
     readonly branches?: readonly string[];
     readonly tags?: readonly string[];
 }
