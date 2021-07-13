@@ -12,7 +12,7 @@ import {
     TooltipHost,
 } from '@fluentui/react';
 import { useConst, useForceUpdate } from '@fluentui/react-hooks';
-import * as filesize from 'filesize';
+import filesize from 'filesize';
 import React, { useCallback, useState } from 'react';
 import { useAsync } from 'react-use';
 import { ConfirmPrompt, useConfirmPrompt } from '../ConfirmPrompt';
