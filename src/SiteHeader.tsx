@@ -119,7 +119,7 @@ export const SiteHeader: React.FunctionComponent<HTMLAttributes<HTMLElement>> = 
         return {
             links: {
                 'a, a:visited': {
-                    color: theme.palette.neutralPrimary,
+                    color: theme.semanticColors.bodyText,
                 },
             },
         };

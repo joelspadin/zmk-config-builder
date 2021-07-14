@@ -127,7 +127,7 @@ export const GitGraph: React.FunctionComponent<IGitGraphProps> = ({ commits, gra
                     },
                     card: {
                         padding: '16px 24px',
-                        color: theme.palette.black,
+                        color: theme.semanticColors.bodyText,
                     } as IStyle,
                 },
                 styles,

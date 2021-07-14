@@ -75,7 +75,7 @@ const getStyles: IStyleFunctionOrObject<Theme, IFileChangeCardStyles> = (theme: 
             marginLeft: 'auto !important',
         },
         fileName: {
-            color: theme.palette.neutralPrimary,
+            color: theme.semanticColors.bodyText,
         },
         rename: {
             '::after': {
