@@ -23,6 +23,7 @@ import { ControlShimmer } from '../shimmer';
 import { CONTROL_WIDTH } from '../styles';
 import { groupBy } from '../util';
 import { RemoteBranchSelect } from './BranchSelect';
+import { CloneState, getProgressDetails } from './CloneProgress';
 
 const classNames = mergeStyleSets({
     actions: {
@@ -81,30 +82,6 @@ async function getRepoOptions(git: IGitRemote): Promise<IComboBoxOption[]> {
     return options;
 }
 
-enum State {
-    Default,
-    Cloning,
-    Done,
-    Error,
-}
-
-function getProgressDetails(state: State, progress?: GitProgressEvent) {
-    let percentComplete = 0;
-    let progressText = '';
-    let complete = false;
-
-    if (state === State.Done) {
-        percentComplete = 100;
-        progressText = 'Done';
-        complete = true;
-    } else if (progress) {
-        percentComplete = (progress.loaded / progress.total) * 100;
-        progressText = progress.phase;
-    }
-
-    return { percentComplete, progressText, complete };
-}
-
 export const CloneRepoPage: React.FunctionComponent = () => {
     const repos = useRepos();
     const remote = useGitRemote();
@@ -112,7 +89,7 @@ export const CloneRepoPage: React.FunctionComponent = () => {
     const messageBar = useMessageBar();
     const [repo, setRepo] = useState<RepoId>();
     const [branch, setBranch] = useState<string>();
-    const [state, setState] = useState(State.Default);
+    const [state, setState] = useState(CloneState.Default);
     const [error, setError] = useState<string>();
     const [progress, setProgress] = useState<GitProgressEvent>();
 
@@ -134,31 +111,30 @@ export const CloneRepoPage: React.FunctionComponent = () => {
         }
 
         try {
-            setState(State.Cloning);
+            setState(CloneState.Cloning);
             await cloneAndSelectRepo(repos, remote, repo, branch, setProgress);
-            setState(State.Done);
+            setState(CloneState.Done);
         } catch (error) {
-            setState(State.Error);
+            setState(CloneState.Error);
             setError(error.toString());
         }
-    }, [repos, remote, repo, branch, state, setState, setProgress]);
+    }, [repos, remote, messageBar, repo, branch, setState, setProgress]);
 
     const onDismissModal = useCallback(() => {
-        if (state === State.Done) {
+        if (state === CloneState.Done) {
             history.push('/repo/current');
         } else {
-            setState(State.Default);
+            setState(CloneState.Default);
             setProgress(undefined);
         }
     }, [history, state]);
 
-    const { percentComplete, progressText, complete } = useMemo(
+    const { percentComplete, progressText, isComplete } = useMemo(
         () => getProgressDetails(state, progress),
         [state, progress],
     );
 
     const disabled = !repo || !branch;
-    const inProgress = state !== State.Default;
 
     return (
         <>
@@ -204,8 +180,8 @@ export const CloneRepoPage: React.FunctionComponent = () => {
             </Section>
 
             <ProgressModal
-                isOpen={inProgress}
-                isComplete={complete || !!error}
+                isOpen={state !== CloneState.Default}
+                isComplete={isComplete || !!error}
                 title={`Cloning ${repo && getRepoDisplayName(repo)}`}
                 progressLabel={progressText}
                 percentComplete={percentComplete}

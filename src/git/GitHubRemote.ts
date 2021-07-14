@@ -1,7 +1,7 @@
 import { Octokit } from '@octokit/rest';
 import * as git from 'isomorphic-git';
 import http from 'isomorphic-git/http/web';
-import { GIT_CORS_PROXY } from '../env';
+import { GITHUB_TEMPLATE_OWNER, GITHUB_TEMPLATE_REPO, GIT_CORS_PROXY } from '../env';
 import { AuthGitHubToken } from './AuthProvider';
 import { getRepoDisplayName, IGitRemote, RepoDetails, RepoId } from './IGitRemote';
 import { REPO_DIR } from './RepoProvider';
@@ -73,7 +73,12 @@ export class GitHubRemote implements IGitRemote {
         }
     }
 
-    async cloneRepo(fs: git.PromiseFsClient, repo: RepoId, ref: string, onProgress?: git.ProgressCallback) {
+    async cloneRepo(
+        fs: git.PromiseFsClient,
+        repo: RepoId,
+        ref: string,
+        onProgress?: git.ProgressCallback,
+    ): Promise<void> {
         const details = await this.getRepo(repo);
 
         if (!details) {
@@ -90,6 +95,17 @@ export class GitHubRemote implements IGitRemote {
             dir: REPO_DIR,
             ref,
         });
+    }
+
+    async createRepoFromTemplate(name: string, isPrivate = false): Promise<RepoId> {
+        const result = await this.octokit.repos.createUsingTemplate({
+            template_owner: GITHUB_TEMPLATE_OWNER,
+            template_repo: GITHUB_TEMPLATE_REPO,
+            private: isPrivate,
+            name,
+        });
+
+        return this.getRepoId(result.data);
     }
 
     private getRepoId(details: OctokitRepo): RepoId {

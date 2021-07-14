@@ -24,4 +24,8 @@ export class StubRemote implements IGitRemote {
     async cloneRepo(): Promise<void> {
         throw new Error('Not implemented');
     }
+
+    async createRepoFromTemplate(): Promise<RepoId> {
+        throw new Error('Not implemented');
+    }
 }

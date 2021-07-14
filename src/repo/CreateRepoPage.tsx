@@ -1,15 +1,34 @@
-import { ITextFieldStyles, mergeStyleSets, PrimaryButton, Stack, TextField } from '@fluentui/react';
-import React, { useState } from 'react';
+import {
+    Checkbox,
+    IStackTokens,
+    ITextFieldStyles,
+    mergeStyleSets,
+    PrimaryButton,
+    Stack,
+    TextField,
+} from '@fluentui/react';
+import { useBoolean } from '@fluentui/react-hooks';
+import { GitProgressEvent } from 'isomorphic-git';
+import React, { useCallback, useMemo, useState } from 'react';
+import { useHistory } from 'react-router-dom';
 import { useDebounce } from 'react-use';
+import { createAndSelectRepo } from '../git/commands';
 import { useGitRemote } from '../git/GitRemoteProvider';
+import { useRepos } from '../git/RepoProvider';
+import { ProgressModal } from '../ProgressModal';
 import { Section, SectionHeader } from '../Section';
 import { CONTROL_WIDTH } from '../styles';
+import { CloneState, getProgressDetails } from './CloneProgress';
 
 const classNames = mergeStyleSets({
     actions: {
         marginTop: 28,
     },
 });
+
+const stackTokens: IStackTokens = {
+    childrenGap: 20,
+};
 
 const textFieldStyles: Partial<ITextFieldStyles> = {
     fieldGroup: {
@@ -20,9 +39,45 @@ const textFieldStyles: Partial<ITextFieldStyles> = {
 const DEBOUNCE_MS = 200;
 
 export const CreateRepoPage: React.FunctionComponent = () => {
+    const repos = useRepos();
     const remote = useGitRemote();
-    const [name, setName] = useState<string>('zmk-config');
+    const history = useHistory();
+    const [name, setName] = useState('zmk-config');
+    const [isPrivate, { toggle: toggleIsPrivate }] = useBoolean(false);
     const [repoExists, setRepoExists] = useState(false);
+
+    const [state, setState] = useState(CloneState.Default);
+    const [error, setError] = useState<string>();
+    const [progress, setProgress] = useState<GitProgressEvent>();
+
+    const createRepo = useCallback(async () => {
+        if (!name || repoExists) {
+            return;
+        }
+
+        try {
+            setState(CloneState.Cloning);
+            await createAndSelectRepo(repos, remote, name, isPrivate, setProgress);
+            setState(CloneState.Done);
+        } catch (error) {
+            setState(CloneState.Error);
+            setError(error.toString());
+        }
+    }, [repos, remote, name, isPrivate, repoExists, setState, setProgress]);
+
+    const onDismissModal = useCallback(() => {
+        if (state === CloneState.Done) {
+            history.push('/repo/current');
+        } else {
+            setState(CloneState.Default);
+            setProgress(undefined);
+        }
+    }, [history, state]);
+
+    const { percentComplete, progressText, isComplete } = useMemo(
+        () => getProgressDetails(state, progress),
+        [state, progress],
+    );
 
     useDebounce(
         async () => {
@@ -49,19 +104,32 @@ export const CreateRepoPage: React.FunctionComponent = () => {
             <Section>
                 <SectionHeader>Create a new repo</SectionHeader>
                 <p>Enter a name for your new ZMK config repo. We&apos;ll do the rest.</p>
-                <TextField
-                    label="Name"
-                    value={name}
-                    autoComplete="off"
-                    onChange={(ev, newValue) => setName(newValue || '')}
-                    styles={textFieldStyles}
-                    errorMessage={errorMessage}
-                />
+                <Stack tokens={stackTokens}>
+                    <TextField
+                        label="Name"
+                        value={name}
+                        autoComplete="off"
+                        onChange={(ev, newValue) => setName(newValue || '')}
+                        styles={textFieldStyles}
+                        errorMessage={errorMessage}
+                    />
+                    <Checkbox label="Make repo private" checked={isPrivate} onChange={toggleIsPrivate} />
+                </Stack>
 
                 <Stack horizontal className={classNames.actions}>
-                    <PrimaryButton text="Create repo" disabled={!!errorMessage} />
+                    <PrimaryButton text="Create repo" disabled={!!errorMessage} onClick={createRepo} />
                 </Stack>
             </Section>
+
+            <ProgressModal
+                isOpen={state !== CloneState.Default}
+                isComplete={isComplete || !!error}
+                title={`Creating ${name}`}
+                progressLabel={progressText}
+                percentComplete={percentComplete}
+                errorText={error}
+                onDismiss={onDismissModal}
+            />
         </>
     );
 };

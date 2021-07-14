@@ -29,7 +29,7 @@ export function getRepoDisplayName(repo: RepoId): string {
     }
 }
 
-export function repoIdEquals(a: RepoId, b: RepoId) {
+export function repoIdEquals(a: RepoId, b: RepoId): boolean {
     if (a.type !== b.type) {
         return false;
     }
@@ -57,4 +57,5 @@ export interface IGitRemote {
     getRepo(repo: RepoId | string): Promise<RepoDetails | undefined>;
 
     cloneRepo(fs: PromiseFsClient, repo: RepoId, ref: string, onProgress?: ProgressCallback): Promise<void>;
+    createRepoFromTemplate(name: string, isPrivate?: boolean): Promise<RepoId>;
 }
