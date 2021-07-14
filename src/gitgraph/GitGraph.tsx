@@ -90,6 +90,7 @@ export const GitGraph: React.FunctionComponent<IGitGraphProps> = ({ commits, gra
                         top: 0,
                         left: 0,
                         width: graphWidth,
+                        height: '100%',
                         overflow: 'hidden',
                     },
                     itemCell: [
