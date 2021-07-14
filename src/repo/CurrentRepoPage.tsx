@@ -1,7 +1,9 @@
-import { IComboBoxStyles, mergeStyleSets, PrimaryButton, Stack } from '@fluentui/react';
+import { IComboBoxStyles, IStackTokens, mergeStyleSets, PrimaryButton, Stack } from '@fluentui/react';
 import * as git from 'isomorphic-git';
 import React, { useState } from 'react';
 import { useAsync } from 'react-use';
+import { ExternalLink } from '../ExternalLink';
+import { useGitRemote } from '../git/GitRemoteProvider';
 import { getRepoDisplayName } from '../git/IGitRemote';
 import { useCurrentRepo, useFs } from '../git/RepoProvider';
 import { InternalLink } from '../InternalLink';
@@ -10,12 +12,20 @@ import { Section, SectionHeader } from '../Section';
 import { ControlShimmer } from '../shimmer';
 import { CONTROL_WIDTH } from '../styles';
 import { LocalBranchSelect } from './BranchSelect';
+import { CloneUrlBadge } from './CloneUrlBadge';
+import { GitHubDesktopBadge } from './GitHubDesktopBadge';
 import { GraphView } from './GraphView';
 import { LocalRepoList } from './LocalRepoList';
+import { VscodeBadge } from './VscodeBadge';
+
+const stackTokens: IStackTokens = {
+    childrenGap: 20,
+};
 
 const classNames = mergeStyleSets({
     actions: {
-        marginTop: 28,
+        marginTop: 14,
+        marginBottom: 28,
     },
 });
 
@@ -26,12 +36,14 @@ const comboBoxStyles: Partial<IComboBoxStyles> = {
 };
 
 export const CurrentRepoPage: React.FunctionComponent = () => {
-    const repo = useCurrentRepo();
     const { fs, dir } = useFs();
+    const repo = useCurrentRepo();
+    const remote = useGitRemote();
     const messageBar = useMessageBar();
 
     const [branch, setBranch] = useState<string | undefined>();
 
+    const details = useAsync(async () => repo && remote.getRepo(repo), [repo]);
     const currentBranch = useAsync(async () => {
         if (!fs) {
             return undefined;
@@ -54,7 +66,8 @@ export const CurrentRepoPage: React.FunctionComponent = () => {
                 <Section>
                     <SectionHeader>Current repo</SectionHeader>
                     <p>
-                        Editing repo <strong>{getRepoDisplayName(repo)}</strong>
+                        Editing{' '}
+                        <ExternalLink href={details.value?.webUrl ?? '#'}>{getRepoDisplayName(repo)}</ExternalLink>.
                     </p>
 
                     {currentBranch.loading ? (
@@ -72,6 +85,18 @@ export const CurrentRepoPage: React.FunctionComponent = () => {
 
                     <Stack horizontal className={classNames.actions}>
                         <PrimaryButton text="Change branch" disabled={branchDisabled} />
+                    </Stack>
+
+                    <p>
+                        These shortcuts will open the repo in another editor. They edit the version of the repo stored
+                        on GitHub, which may not match the copy stored in your browser. Use the{' '}
+                        <InternalLink href="/commit">commit page</InternalLink> to save your changes and push them to
+                        GitHub.
+                    </p>
+                    <Stack as="p" horizontal wrap verticalAlign="end" tokens={stackTokens}>
+                        <CloneUrlBadge repo={repo} cloneUrl={details.value?.cloneUrl} />
+                        <VscodeBadge repo={repo} />
+                        <GitHubDesktopBadge repo={repo} />
                     </Stack>
                 </Section>
             ) : (

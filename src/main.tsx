@@ -1,18 +1,10 @@
-import { initializeIcons, mergeStyles, registerIcons } from '@fluentui/react';
-import { MarkGithubIcon } from '@primer/octicons-react';
+import { mergeStyles } from '@fluentui/react';
 import React from 'react';
 import ReactDOM from 'react-dom';
 import { App } from './App';
+import './icons';
 import './index.css';
 import './polyfills.js';
-
-registerIcons({
-    icons: {
-        GitHub: <MarkGithubIcon />,
-    },
-});
-
-initializeIcons();
 
 mergeStyles({
     ':global(body,html,#root)': {

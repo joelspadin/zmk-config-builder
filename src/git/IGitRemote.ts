@@ -42,6 +42,7 @@ export function repoIdEquals(a: RepoId, b: RepoId): boolean {
 
 export interface RepoDetails extends RepoId {
     readonly cloneUrl: string;
+    readonly webUrl?: string;
 }
 
 export interface IGitRemote {

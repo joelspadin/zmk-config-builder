@@ -67,6 +67,7 @@ export class GitHubRemote implements IGitRemote {
             return {
                 ...this.getRepoId(response.data),
                 cloneUrl: response.data.clone_url,
+                webUrl: response.data.html_url,
             };
         } catch {
             return undefined;
