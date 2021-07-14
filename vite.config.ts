@@ -12,13 +12,11 @@ export default defineConfig({
             https: 'https-browserify',
             process: 'process/browser',
             stream: 'stream-browserify',
+            // https://github.com/nodejs/readable-stream/issues/348
             'readable-stream': 'vite-compatible-readable-stream',
             string_decoder: 'string_decoder',
             url: 'url',
             util: 'util',
         },
-    },
-    define: {
-        'process.env.NODE_DEBUG': false,
     },
 });
