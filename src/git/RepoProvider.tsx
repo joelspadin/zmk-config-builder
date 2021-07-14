@@ -58,9 +58,7 @@ const stub: RepoState = {
 
     listRepos: () => [],
     exists: () => false,
-    deleteRepo: async () => {
-        return;
-    },
+    deleteRepo: async () => undefined,
 };
 
 export const RepoContext = createContext<RepoState>(stub);

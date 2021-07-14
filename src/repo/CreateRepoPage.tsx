@@ -15,6 +15,7 @@ import { useDebounce } from 'react-use';
 import { createAndSelectRepo } from '../git/commands';
 import { useGitRemote } from '../git/GitRemoteProvider';
 import { useRepos } from '../git/RepoProvider';
+import { useNavLockCallback } from '../NavLockProvider';
 import { ProgressModal } from '../ProgressModal';
 import { Section, SectionHeader } from '../Section';
 import { CONTROL_WIDTH } from '../styles';
@@ -50,7 +51,7 @@ export const CreateRepoPage: React.FunctionComponent = () => {
     const [error, setError] = useState<string>();
     const [progress, setProgress] = useState<GitProgressEvent>();
 
-    const createRepo = useCallback(async () => {
+    const createRepo = useNavLockCallback(async () => {
         if (!name || repoExists) {
             return;
         }

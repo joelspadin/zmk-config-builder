@@ -17,6 +17,7 @@ import { getRepoDisplayName, getRepoGroup, getRepoKey, IGitRemote, RepoId } from
 import { useRepos } from '../git/RepoProvider';
 import { InternalLink } from '../InternalLink';
 import { useMessageBar } from '../MessageBarProvider';
+import { useNavLockCallback } from '../NavLockProvider';
 import { ProgressModal } from '../ProgressModal';
 import { Section, SectionHeader } from '../Section';
 import { ControlShimmer } from '../shimmer';
@@ -95,7 +96,7 @@ export const CloneRepoPage: React.FunctionComponent = () => {
 
     const repoOptions = useAsync(() => getRepoOptions(remote), [remote]);
 
-    const cloneRepo = useCallback(async () => {
+    const cloneRepo = useNavLockCallback(async () => {
         if (!repo || !branch) {
             return;
         }

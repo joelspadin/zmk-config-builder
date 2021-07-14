@@ -6,6 +6,7 @@ import { AuthProvider } from './git/AuthProvider';
 import { GitRemoteProvider } from './git/GitRemoteProvider';
 import { RepoProvider } from './git/RepoProvider';
 import { MessageBarProvider } from './MessageBarProvider';
+import { NavLockProvider } from './NavLockProvider';
 import { Routes } from './routes';
 import { SiteHeader, SiteHeaderHeight } from './SiteHeader';
 import { SiteNav } from './SiteNav';
@@ -104,16 +105,18 @@ const Content: React.FunctionComponent = () => {
 
 export const App: React.FunctionComponent = () => {
     return (
-        <ThemeProvider>
-            <RepoProvider>
-                <AuthProvider>
-                    <GitRemoteProvider>
-                        <Router>
-                            <Content />
-                        </Router>
-                    </GitRemoteProvider>
-                </AuthProvider>
-            </RepoProvider>
-        </ThemeProvider>
+        <Router>
+            <ThemeProvider>
+                <NavLockProvider>
+                    <RepoProvider>
+                        <AuthProvider>
+                            <GitRemoteProvider>
+                                <Content />
+                            </GitRemoteProvider>
+                        </AuthProvider>
+                    </RepoProvider>
+                </NavLockProvider>
+            </ThemeProvider>
+        </Router>
     );
 };

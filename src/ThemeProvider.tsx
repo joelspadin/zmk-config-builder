@@ -5,7 +5,7 @@ import { darkTheme, lightTheme } from './themes';
 
 export type DarkModeValue = [boolean, Dispatch<boolean>];
 
-export const DarkModeContext = createContext<DarkModeValue>([false, () => {}]);
+export const DarkModeContext = createContext<DarkModeValue>([false, () => undefined]);
 
 export const ThemeProvider: React.FunctionComponent = ({ children }) => {
     const prefersDarkMode = useMedia('(prefers-color-scheme: dark)');

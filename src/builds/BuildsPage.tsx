@@ -3,14 +3,10 @@ import React from 'react';
 import { ExternalLink } from '../ExternalLink';
 import { PageTitle } from '../PageTitle';
 import { Section, SectionHeader } from '../Section';
-import { UnsavedChangesPrompt } from '../UnsavedChangesPrompt';
 import { BuildMatrix } from './BuildMatrix';
 import { RecentBuildsList } from './RecentBuildsList';
 
 export const BuildsPage: React.FunctionComponent = () => {
-    // TODO
-    const hasChanges = false;
-
     // TODO
     const actionsUrl = 'https://github.com/joelspadin/zmk-config/actions';
 
@@ -18,7 +14,6 @@ export const BuildsPage: React.FunctionComponent = () => {
 
     return (
         <>
-            <UnsavedChangesPrompt hasChanges={hasChanges} />
             <Stack>
                 <PageTitle>Builds</PageTitle>
 
@@ -36,10 +31,6 @@ export const BuildsPage: React.FunctionComponent = () => {
                     <SectionHeader>Recent builds</SectionHeader>
                     <RecentBuildsList />
                 </Section>
-
-                {/* <Stack horizontal>
-                    <PrimaryButton text="Save changes" disabled={!hasChanges} />
-                </Stack> */}
             </Stack>
         </>
     );
