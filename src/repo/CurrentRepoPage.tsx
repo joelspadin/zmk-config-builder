@@ -6,6 +6,7 @@ import { ExternalLink } from '../ExternalLink';
 import { useGitRemote } from '../git/GitRemoteProvider';
 import { getRepoDisplayName } from '../git/IGitRemote';
 import { useCurrentRepo, useFs } from '../git/RepoProvider';
+import { InlineCode } from '../InlineCode';
 import { InternalLink } from '../InternalLink';
 import { useMessageBar } from '../MessageBarProvider';
 import { Section, SectionHeader } from '../Section';
@@ -88,10 +89,11 @@ export const CurrentRepoPage: React.FunctionComponent = () => {
                     </Stack>
 
                     <p>
-                        These shortcuts will open the repo in another editor. They edit the version of the repo stored
-                        on GitHub, which may not match the copy stored in your browser. Use the{' '}
+                        Use these shortcuts to clone the repo to your PC or open it in another editor. They edit a
+                        separate copy of the repo which may not match the copy stored in your browser. Use the{' '}
                         <InternalLink href="/commit">commit page</InternalLink> to save your changes and push them to
-                        GitHub.
+                        GitHub. Then use <InlineCode>git pull</InlineCode> to sync the changes to the other copy of the
+                        repo.
                     </p>
                     <Stack as="p" horizontal wrap verticalAlign="end" tokens={stackTokens}>
                         <CloneUrlBadge repo={repo} cloneUrl={details.value?.cloneUrl} />
@@ -112,9 +114,9 @@ export const CurrentRepoPage: React.FunctionComponent = () => {
             <Section>
                 <SectionHeader>Available repos</SectionHeader>
                 <p>
-                    ZMK Config Builder needs to clone a repo and store it locally in your browser before it can edit it.
-                    The following repos have already been cloned. You can select one for editing or delete them to free
-                    up space.
+                    ZMK Config Builder clones a repo and stores a copy of it locally in your browser so it can edit it.
+                    The following repos have already been cloned. You can switch which repo you are editing or delete
+                    them to free up space.
                 </p>
                 <p>
                     If the repo you want to edit isn&apos;t listed here,{' '}

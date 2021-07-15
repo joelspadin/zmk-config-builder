@@ -142,7 +142,7 @@ export const CloneRepoPage: React.FunctionComponent = () => {
             <Section>
                 <SectionHeader>Select the repo to clone</SectionHeader>
                 <p>
-                    Select your ZMK config repo and clone it to make a copy of it in your browser that ZMK Config
+                    Select your ZMK config repository and clone it to make a copy in your browser that ZMK Config
                     Builder can edit.
                 </p>
                 {repoOptions.value ? (

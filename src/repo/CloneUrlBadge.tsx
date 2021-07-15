@@ -116,7 +116,7 @@ export const CloneUrlBadge: React.FunctionComponent<ICloneUrlBadgeProps> = ({ cl
                     selectedKey={tab}
                     onLinkClick={(item) => setTab((item?.props.itemKey as Tabs) ?? Tabs.Https)}
                 >
-                    <PivotItem headerText="HTTPS" itemKey={Tabs.Https} />
+                    <PivotItem headerText="Clone URL" itemKey={Tabs.Https} />
                     {repo?.type === 'github' && <PivotItem headerText="GitHub CLI" itemKey={Tabs.GitHubCli} />}
                 </Pivot>
                 <Stack horizontal verticalAlign="end">

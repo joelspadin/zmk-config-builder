@@ -104,7 +104,7 @@ export const CreateRepoPage: React.FunctionComponent = () => {
         <>
             <Section>
                 <SectionHeader>Create a new repo</SectionHeader>
-                <p>Enter a name for your new ZMK config repo. We&apos;ll do the rest.</p>
+                <p>Enter a name for your new repository. We&apos;ll do the rest.</p>
                 <Stack tokens={stackTokens}>
                     <TextField
                         label="Name"
@@ -114,7 +114,7 @@ export const CreateRepoPage: React.FunctionComponent = () => {
                         styles={textFieldStyles}
                         errorMessage={errorMessage}
                     />
-                    <Checkbox label="Make repo private" checked={isPrivate} onChange={toggleIsPrivate} />
+                    <Checkbox label="Make repository private" checked={isPrivate} onChange={toggleIsPrivate} />
                 </Stack>
 
                 <Stack horizontal className={classNames.actions}>
