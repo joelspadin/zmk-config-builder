@@ -2,6 +2,7 @@ import {
     classNamesFunction,
     FocusZone,
     FocusZoneDirection,
+    getIcon,
     HoverCard,
     HoverCardType,
     IPageProps,
@@ -35,6 +36,7 @@ export interface IGitGraphStyles {
     itemCell: IStyle;
     itemCellAlt: IStyle;
     branch: IStyle;
+    branchRemote: IStyle;
     tag: IStyle;
     message: IStyle;
     messageAlt: IStyle;
@@ -63,8 +65,10 @@ export const GitGraph: React.FunctionComponent<IGitGraphProps> = ({ commits, gra
     const theme = useTheme();
     const classNames = getClassNames(
         ({ theme, styles, graphWidth }) => {
+            const tagIcon = getIcon('TagSolid');
+
             const tag: IStyle = {
-                display: 'inline-block',
+                display: 'inline-flex',
                 borderWidth: 1,
                 borderStyle: 'solid',
                 borderRadius: theme.effects.roundedCorner4,
@@ -107,16 +111,23 @@ export const GitGraph: React.FunctionComponent<IGitGraphProps> = ({ commits, gra
                     itemCellAlt: {
                         backgroundColor: theme.palette.neutralLighterAlt,
                     },
-                    branch: [
-                        tag,
-                        {
-                            borderColor: theme.palette.themePrimary,
-                        },
-                    ],
+                    branch: [tag, { color: theme.palette.teal, borderColor: theme.palette.teal }],
+                    branchRemote: [tag, { color: theme.palette.themePrimary, borderColor: theme.palette.themePrimary }],
                     tag: [
                         tag,
                         {
-                            borderColor: theme.palette.green,
+                            color: theme.palette.themePrimary,
+                            borderColor: theme.palette.themePrimary,
+                            '::before': {
+                                display: 'block',
+                                fontFamily: tagIcon?.subset.fontFace?.fontFamily,
+                                content: `"${tagIcon?.code}"`,
+                                paddingInlineEnd: 4,
+                                // dumb positioning hack to align tag vertically
+                                lineHeight: 16,
+                                position: 'relative',
+                                top: 2,
+                            } as IStyle,
                         },
                     ],
                     message: {
@@ -201,11 +212,14 @@ export const GitGraph: React.FunctionComponent<IGitGraphProps> = ({ commits, gra
 
             return (
                 <div key={index} className={cellClassName} data-is-focusable={true}>
-                    {item.branches?.map((branch, i) => (
-                        <span key={i} className={classNames.branch}>
-                            {branch}
-                        </span>
-                    ))}
+                    {item.branches?.map((branch, i) => {
+                        const isRemote = branch.startsWith('origin/');
+                        return (
+                            <span key={i} className={isRemote ? classNames.branchRemote : classNames.branch}>
+                                {branch}
+                            </span>
+                        );
+                    })}
                     {item.tags?.map((tag, i) => (
                         <span key={i} className={classNames.tag}>
                             {tag}
