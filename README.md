@@ -1,3 +1,5 @@
+This repo is deprecated in favor of adding its features to [a VS Code extension](https://github.com/joelspadin/zmk-tools) instead.
+
 # ZMK Config Builder
 
 A web app for creating and updating user config repos for [ZMK Firmware](https://zmkfirmware.dev/).
